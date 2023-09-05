@@ -2,23 +2,26 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChangeEvent, useRef, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { MintButtonComponent } from '@/components/MintButtonComponent';
 
 export default function HomeClient() {
   const { toast } = useToast();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
 
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
+  const [filename, setFilename] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
 
   const handleVideoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
       const objectURL = URL.createObjectURL(file);
-      setSelectedVideo(objectURL);
+      setSelectedVideoUrl(objectURL);
     }
   };
 
@@ -42,7 +45,7 @@ export default function HomeClient() {
       <div className={'max-w-md mx-auto flex flex-col p-2 mt-4 gap-6'}>
         <div className={'flex flex-row justify-center'}>
           <Card className={'aspect-video w-full bg-black'}>
-            {selectedVideo === null && (
+            {selectedVideoUrl === null && (
               <div
                 className={
                   'flex w-full h-full text-xl text-white justify-center items-center'
@@ -51,9 +54,9 @@ export default function HomeClient() {
                 Video Preview
               </div>
             )}
-            {selectedVideo && (
+            {selectedVideoUrl && (
               <video
-                src={selectedVideo}
+                src={selectedVideoUrl}
                 loop={true}
                 autoPlay={true}
                 className="w-full h-full"
@@ -80,23 +83,44 @@ export default function HomeClient() {
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="email">Filename</Label>
-            <Input type="text" placeholder={'Filename'} required={true} />
+            <Input
+              type="text"
+              placeholder={'Filename'}
+              required={true}
+              value={filename}
+              onChange={(e) => {
+                setFilename(e.target.value);
+              }}
+            />
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="email">Name</Label>
-            <Input type="text" placeholder={'Name'} required={true} />
+            <Input
+              type="text"
+              placeholder={'Name'}
+              required={true}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
+            />
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="email">Description</Label>
-            <Textarea placeholder={'Description'} required={true} />
+            <Textarea
+              placeholder={'Description'}
+              required={true}
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
+            />
           </div>
-          <Button
-            onClick={() => {
+          <MintButtonComponent
+            onCLick={() => {
               onMint();
             }}
-          >
-            Mint
-          </Button>
+          />
         </form>
       </div>
     </main>
