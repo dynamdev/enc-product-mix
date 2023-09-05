@@ -37,8 +37,8 @@
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,jsx}": [
-      "next lint",
-      "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\""
+      "npm run format",
+      "npm run lint"
     ],
     "src/**/*.{json,md}": "prettier --write"
   }
