@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { ChangeEvent, useRef, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { MintButtonComponent } from '@/components/MintButtonComponent';
+import axios from 'axios';
 
 export default function HomeClient() {
   const { toast } = useToast();
@@ -13,6 +14,7 @@ export default function HomeClient() {
   const refFrom = useRef<HTMLFormElement | null>(null);
 
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [filename, setFilename] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -25,6 +27,7 @@ export default function HomeClient() {
     if (file) {
       const objectURL = URL.createObjectURL(file);
       setSelectedVideoUrl(objectURL);
+      setSelectedVideo(file);
     }
   };
 
@@ -38,11 +41,23 @@ export default function HomeClient() {
     setButtonText('Minting...');
     setIsButtonLoading(true);
 
-    toast({
-      variant: 'destructive',
-      title: 'Unsuccessful Mint!',
-      description: 'Only contract owner can mint!',
+    const formData = new FormData();
+    formData.append('video', selectedVideo!);
+    formData.append('filename', filename);
+    formData.append('name', name);
+    formData.append('description', description);
+
+    axios.post('/api/mint', formData).then((response) => {
+      console.log(response);
+      setButtonText('Mint');
+      setIsButtonLoading(false);
     });
+
+    // toast({
+    //   variant: 'destructive',
+    //   title: 'Unsuccessful Mint!',
+    //   description: 'Only contract owner can mint!',
+    // });
   };
 
   return (
