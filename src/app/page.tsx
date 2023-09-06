@@ -17,6 +17,9 @@ export default function HomeClient() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [buttonText, setButtonText] = useState('Mint');
+
   const handleVideoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
@@ -32,7 +35,9 @@ export default function HomeClient() {
 
     if (!isFormValid) return;
 
-    console.log('minting ...');
+    setButtonText('Minting...');
+    setIsButtonLoading(true);
+
     toast({
       variant: 'destructive',
       title: 'Unsuccessful Mint!',
@@ -120,6 +125,8 @@ export default function HomeClient() {
             onCLick={() => {
               onMint();
             }}
+            text={buttonText}
+            isLoading={isButtonLoading}
           />
         </form>
       </div>

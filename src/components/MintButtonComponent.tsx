@@ -1,10 +1,13 @@
 import { Button } from '@/components/ui/button';
 
 interface MintButtonComponentProps {
+  isLoading: boolean;
+  text: string;
   onCLick: () => void;
 }
+
 export const MintButtonComponent = (props: MintButtonComponentProps) => {
-  const { onCLick } = props;
+  const { onCLick, text, isLoading } = props;
 
   return (
     <>
@@ -12,8 +15,9 @@ export const MintButtonComponent = (props: MintButtonComponentProps) => {
         onClick={() => {
           onCLick();
         }}
+        disabled={isLoading}
       >
-        Mint
+        {text}
       </Button>
     </>
   );
