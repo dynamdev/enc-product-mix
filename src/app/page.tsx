@@ -28,6 +28,7 @@ export default function HomeClient() {
       const objectURL = URL.createObjectURL(file);
       setSelectedVideoUrl(objectURL);
       setSelectedVideo(file);
+      setFilename(file.name);
     }
   };
 
