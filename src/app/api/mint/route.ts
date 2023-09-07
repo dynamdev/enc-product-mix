@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { S3 } from 'aws-sdk';
 import { upload } from '@/lib/files';
+import { listFilesInBucket } from '@/lib/filebase';
 
 export async function GET() {
   return NextResponse.json({ data: 'Hello from minting api!' });
@@ -19,7 +20,8 @@ export async function POST(request: Request, response: Response) {
     return NextResponse.json({ error: 'Missing parameters!' }, { status: 400 });
   }
 
-  await upload('public/' + filename, video);
+  //await upload('public/' + filename, video);
+  const files = await listFilesInBucket('enchantmint-product-mix', 'video/');
 
-  return NextResponse.json({ data: 'Done uploading image!' });
+  return NextResponse.json({ data: files });
 }
