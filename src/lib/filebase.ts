@@ -4,6 +4,9 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import axios, { AxiosError } from 'axios';
+import axiosCookieJarSupport from 'axios-cookiejar-support';
+import { CookieJar } from 'tough-cookie';
 
 const s3 = new S3Client({
   region: 'us-east-1',
@@ -11,6 +14,8 @@ const s3 = new S3Client({
   endpoint: 'https://s3.filebase.com',
   forcePathStyle: true,
 });
+
+const cookieJar = new CookieJar();
 
 interface IListFilesInBucket {
   ETag: string;
@@ -84,5 +89,54 @@ export async function uploadToBucket(
   } catch (error) {
     console.error('Error uploading file to S3:', error);
     throw error;
+  }
+}
+
+interface PinnedObjectFilters {
+  cid?: string[];
+  name?: string;
+  match?: 'exact' | 'iexact' | 'partial' | 'ipartial';
+  status?: ('queued' | 'pinning' | 'pinned' | 'failed')[];
+  before?: string;
+  after?: string;
+  limit?: number;
+  meta?: object;
+}
+
+export async function getPinnedObjects(filters?: PinnedObjectFilters): Promise<
+  {
+    created: Date;
+    delegates: string[];
+    info: { size: number };
+    pin: {
+      cid: string;
+      meta: {};
+      name: string;
+      origins: [];
+    };
+    requestid: string;
+    status: string;
+  }[]
+> {
+  try {
+    const headers = {
+      Authorization: `Bearer ${process.env.FILEBASE_API_BEARER_TOKEN}`,
+      'Content-Type': 'application/json',
+    };
+
+    const response = await axios.get(process.env.FILEBASE_API_PIN_ENDPOINT!, {
+      headers: headers,
+      params: filters,
+    });
+
+    console.log(response);
+
+    if (response.status === 200) {
+      return response.data.results;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    return [];
   }
 }
