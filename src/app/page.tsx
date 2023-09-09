@@ -19,8 +19,12 @@ export default function HomeClient() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const [isButtonLoading, setIsButtonLoading] = useState(false);
-  const [buttonText, setButtonText] = useState('Mint');
+  const [isButtonUploadIpfsLoading, setIsButtonUploadIpfsLoading] =
+    useState(false);
+  const [buttonUploadIpfsText, setButtonUploadIpfsText] =
+    useState('Upload to IPFS');
+
+  const [jsonCid, setJsonCid] = useState('');
 
   const handleVideoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
@@ -39,8 +43,8 @@ export default function HomeClient() {
 
     if (!isFormValid) return;
 
-    setButtonText('Minting...');
-    setIsButtonLoading(true);
+    setButtonUploadIpfsText('Uploading...');
+    setIsButtonUploadIpfsLoading(true);
 
     const formData = new FormData();
     formData.append('video', selectedVideo!);
@@ -49,16 +53,10 @@ export default function HomeClient() {
     formData.append('description', description);
 
     axios.post('/api/mint', formData).then((response) => {
-      console.log(response);
-      setButtonText('Mint');
-      setIsButtonLoading(false);
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      setJsonCid(response.data.jsonCid);
     });
-
-    // toast({
-    //   variant: 'destructive',
-    //   title: 'Unsuccessful Mint!',
-    //   description: 'Only contract owner can mint!',
-    // });
   };
 
   const onTest = () => {
@@ -145,17 +143,19 @@ export default function HomeClient() {
             onCLick={() => {
               onMint();
             }}
-            text={buttonText}
-            isLoading={isButtonLoading}
+            text={buttonUploadIpfsText}
+            isLoading={isButtonUploadIpfsLoading}
           />
+        </form>
+        <div className={'flex flex-col p-2 mx-auto w-full'}>
           <MintButtonComponent
             onCLick={() => {
               onTest();
             }}
-            text={'Test'}
-            isLoading={false}
+            text={'Mint' + (jsonCid === '' ? '' : ': ' + jsonCid)}
+            isLoading={jsonCid === ''}
           />
-        </form>
+        </div>
       </div>
     </main>
   );

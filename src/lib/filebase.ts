@@ -4,9 +4,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import axios, { AxiosError } from 'axios';
-import axiosCookieJarSupport from 'axios-cookiejar-support';
-import { CookieJar } from 'tough-cookie';
+import axios from 'axios';
 
 const s3 = new S3Client({
   region: 'us-east-1',
@@ -14,8 +12,6 @@ const s3 = new S3Client({
   endpoint: 'https://s3.filebase.com',
   forcePathStyle: true,
 });
-
-const cookieJar = new CookieJar();
 
 interface IListFilesInBucket {
   ETag: string;

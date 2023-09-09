@@ -37,8 +37,6 @@ export async function POST(request: Request) {
     }
   }
 
-  console.log(videoCid);
-
   await uploadToBucket(
     'enchantmint-product-mix',
     filenameJson,
@@ -49,5 +47,19 @@ export async function POST(request: Request) {
     }),
   );
 
-  return NextResponse.json({ data: 'Done' });
+  let jsonCid = '';
+
+  while (jsonCid === '') {
+    const jsonIpfsData = await getPinnedObjects({
+      status: ['pinned'],
+      limit: 1,
+    });
+
+    if (jsonIpfsData.length === 0) continue;
+    else if (jsonIpfsData[0].pin.name === filenameJson) {
+      jsonCid = jsonIpfsData[0].pin.cid;
+    }
+  }
+
+  return NextResponse.json({ jsonCid: jsonCid });
 }
