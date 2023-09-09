@@ -7,7 +7,15 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { MintButtonComponent } from '@/components/MintButtonComponent';
 import { BrowserProvider } from 'ethers/providers';
+import { Interface, FormatTypes } from '@ethersproject/abi';
+import { ethers } from 'ethers';
 import axios from 'axios';
+import enchantmintProductMixNftAbi from './../abi/enchantmintProductMixNft.json';
+
+const iface = new Interface(enchantmintProductMixNftAbi);
+iface.format(FormatTypes.full);
+
+const CONTRACT_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
 export default function HomeClient() {
   const { toast } = useToast();
@@ -29,6 +37,8 @@ export default function HomeClient() {
   const [isButtonMintLoading, setIsButtonMintLoading] = useState(true);
   const [buttonMintText, setButtonMintText] = useState('Mint');
   const [metamaskAddress, setMetamaskAddress] = useState('');
+  const [metamaskSigner, setMetamaskSigner] =
+    useState<ethers.JsonRpcSigner | null>(null);
 
   useEffect(() => {
     if (metamaskAddress === '') {
@@ -39,7 +49,7 @@ export default function HomeClient() {
 
     if (jsonCid === '') {
       setIsButtonMintLoading(true);
-      setButtonMintText('Connected Wallet: ' + metamaskAddress);
+      setButtonMintText('Mint');
       return;
     }
 
@@ -62,6 +72,7 @@ export default function HomeClient() {
     await provider.send('eth_requestAccounts', []);
     const signer = await provider.getSigner();
     setMetamaskAddress(await signer.getAddress());
+    setMetamaskSigner(signer);
   };
 
   const onUploadToIpfs = () => {
@@ -87,12 +98,26 @@ export default function HomeClient() {
     });
   };
 
-  const onTest = useCallback(() => {
+  const onMintNft = useCallback(() => {
     if (metamaskAddress === '') {
       handleConnectWallet().then(() => {});
       return;
     }
-  }, [metamaskAddress]);
+
+    const nftContract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      enchantmintProductMixNftAbi,
+      metamaskSigner,
+    );
+
+    nftContract
+      .ownerMint('https://ipfs.filebase.io/ipfs/' + jsonCid)
+      .then(() => {
+        toast({
+          title: 'Successfully minted ' + jsonCid,
+        });
+      });
+  }, [metamaskAddress, metamaskSigner]);
 
   return (
     <main className="min-h-screen">
@@ -179,9 +204,15 @@ export default function HomeClient() {
           />
         </form>
         <div className={'flex flex-col p-2 mx-auto w-full'}>
+          <div className={'text-center'}>
+            Connected Wallet:{' '}
+            {metamaskAddress === ''
+              ? 'Please connect your wallet!'
+              : metamaskAddress}
+          </div>
           <MintButtonComponent
             onCLick={() => {
-              onTest();
+              onMintNft();
             }}
             text={buttonMintText}
             isLoading={isButtonMintLoading}
