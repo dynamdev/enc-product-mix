@@ -4,7 +4,6 @@ async function main() {
   const EnchantmintProductMixNft = await ethers.getContractFactory(
     'EnchantmintProductMixNft',
   );
-  console.log('Contract factory obtained.');
 
   const enchantmintProductMixNftInstance =
     await EnchantmintProductMixNft.deploy();
