@@ -3,9 +3,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { MintButtonComponent } from '@/components/MintButtonComponent';
+import { BrowserProvider } from 'ethers/providers';
 import axios from 'axios';
 
 export default function HomeClient() {
@@ -25,6 +26,26 @@ export default function HomeClient() {
     useState('Upload to IPFS');
 
   const [jsonCid, setJsonCid] = useState('');
+  const [isButtonMintLoading, setIsButtonMintLoading] = useState(true);
+  const [buttonMintText, setButtonMintText] = useState('Mint');
+  const [metamaskAddress, setMetamaskAddress] = useState('');
+
+  useEffect(() => {
+    if (metamaskAddress === '') {
+      setButtonMintText('Connect Wallet');
+      setIsButtonMintLoading(false);
+      return;
+    }
+
+    if (jsonCid === '') {
+      setIsButtonMintLoading(true);
+      setButtonMintText('Connected Wallet: ' + metamaskAddress);
+      return;
+    }
+
+    setButtonMintText('Mint: ' + jsonCid);
+    setIsButtonMintLoading(false);
+  }, [jsonCid, metamaskAddress]);
 
   const handleVideoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
@@ -36,7 +57,14 @@ export default function HomeClient() {
     }
   };
 
-  const onMint = () => {
+  const handleConnectWallet = async () => {
+    const provider = new BrowserProvider(window.ethereum);
+    await provider.send('eth_requestAccounts', []);
+    const signer = await provider.getSigner();
+    setMetamaskAddress(await signer.getAddress());
+  };
+
+  const onUploadToIpfs = () => {
     if (refFrom.current === null) return;
 
     const isFormValid = refFrom.current.checkValidity();
@@ -59,9 +87,12 @@ export default function HomeClient() {
     });
   };
 
-  const onTest = () => {
-    console.log('Hello Test!');
-  };
+  const onTest = useCallback(() => {
+    if (metamaskAddress === '') {
+      handleConnectWallet().then(() => {});
+      return;
+    }
+  }, [metamaskAddress]);
 
   return (
     <main className="min-h-screen">
@@ -141,7 +172,7 @@ export default function HomeClient() {
           </div>
           <MintButtonComponent
             onCLick={() => {
-              onMint();
+              onUploadToIpfs();
             }}
             text={buttonUploadIpfsText}
             isLoading={isButtonUploadIpfsLoading}
@@ -152,8 +183,8 @@ export default function HomeClient() {
             onCLick={() => {
               onTest();
             }}
-            text={'Mint' + (jsonCid === '' ? '' : ': ' + jsonCid)}
-            isLoading={jsonCid === ''}
+            text={buttonMintText}
+            isLoading={isButtonMintLoading}
           />
         </div>
       </div>
