@@ -8,6 +8,9 @@ contract EnchantmintProductMixNft is ERC1155, Ownable {
     // Mapping to store the timestamp of the initial mint for each token ID
     mapping(uint256 => uint256) public mintTimestamps;
 
+    // Mapping to store individual URIs for each token ID
+    mapping(uint256 => string) private _tokenURIs;
+
     // Counter for the latest token ID
     uint256 private _currentTokenId = 0;
 
@@ -22,7 +25,7 @@ contract EnchantmintProductMixNft is ERC1155, Ownable {
         require(balanceOf(owner(), _currentTokenId) == 0, "Owner can only have 1 copy of the NFT");
 
         // Set the token metadata uri
-        _setURI(_currentTokenId, artworkURI);
+        _tokenURIs[_currentTokenId] = artworkURI;
 
         _mint(owner(), _currentTokenId, 1, ""); // Amount is set to 1 and the owner is the recipient
 
@@ -35,7 +38,8 @@ contract EnchantmintProductMixNft is ERC1155, Ownable {
 
     /**
      * @dev Returns an array of minted NFT URLs and their mint dates.
-     * @return A tuple containing two arrays: one for URLs and one for mint dates.
+     * @return urls An array of NFT URLs.
+     * @return dates An array of mint dates.
      */
     function getMintedNFTDetails() public view returns (string[] memory urls, uint256[] memory dates) {
         uint256 length = _currentTokenId;
@@ -48,5 +52,25 @@ contract EnchantmintProductMixNft is ERC1155, Ownable {
         }
 
         return (urls, dates);
+    }
+
+    /**
+     * @dev Returns the URI for a given token ID.
+     * @param tokenId The ID of the token whose URI to retrieve.
+     * @return A string representing the token's URI.
+     */
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        require(_exists(tokenId), "ERC1155: URI query for nonexistent token");
+
+        return _tokenURIs[tokenId];
+    }
+
+    /**
+     * @dev Check if a token exists
+     * @param tokenId The token ID to check
+     * @return A boolean representing the token's existence.
+     */
+    function _exists(uint256 tokenId) internal view returns (bool) {
+        return mintTimestamps[tokenId] != 0;
     }
 }
