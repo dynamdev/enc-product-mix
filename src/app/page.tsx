@@ -61,6 +61,10 @@ export default function HomeClient() {
     // });
   };
 
+  const onTest = () => {
+    console.log('Hello Test!');
+  };
+
   return (
     <main className="min-h-screen">
       <div className={'max-w-md mx-auto flex flex-col p-2 mt-4 gap-6'}>
@@ -143,6 +147,13 @@ export default function HomeClient() {
             }}
             text={buttonText}
             isLoading={isButtonLoading}
+          />
+          <MintButtonComponent
+            onCLick={() => {
+              onTest();
+            }}
+            text={'Test'}
+            isLoading={false}
           />
         </form>
       </div>
