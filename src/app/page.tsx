@@ -117,7 +117,7 @@ export default function HomeClient() {
           title: 'Successfully minted ' + jsonCid,
         });
       });
-  }, [metamaskAddress, metamaskSigner]);
+  }, [jsonCid, metamaskAddress, metamaskSigner, toast]);
 
   return (
     <main className="min-h-screen">
