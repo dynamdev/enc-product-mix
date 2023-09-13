@@ -7,8 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -16,49 +14,29 @@
     "@aws-sdk/credential-provider-node": "^3.405.0",
     "@aws-sdk/s3-request-presigner": "^3.405.0",
     "@ethersproject/abi": "^5.7.0",
-    "@radix-ui/react-label": "^2.0.2",
-    "@radix-ui/react-separator": "^1.0.3",
-    "@radix-ui/react-slot": "^1.0.2",
-    "@radix-ui/react-toast": "^1.1.4",
-    "@types/node": "20.5.9",
+    "@types/node": "20.6.0",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
     "aws-crt": "^1.18.0",
     "aws-sdk": "^2.1452.0",
     "axios": "^1.5.0",
-    "bufferutil": "^4.0.7",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "eslint": "8.48.0",
+    "eslint": "8.49.0",
     "eslint-config-next": "13.4.19",
-    "ethers": "^6.7.1",
-    "lucide-react": "^0.274.0",
     "next": "13.4.19",
     "postcss": "8.4.29",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "tailwind-merge": "^1.14.0",
     "tailwindcss": "3.3.3",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.2.2",
-    "utf-8-validate": "^5.0.10"
+    "typescript": "5.2.2"
   },
   "devDependencies": {
+    "daisyui": "^3.7.3",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "prettier": "^3.0.3"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "prettier": "3.0.3"
   },
   "lint-staged": {
-    "src/**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "npm run format"
-    ],
-    "src/**/*.{json,md}": "prettier --write"
+    "**/*": "prettier --write --ignore-unknown"
   }
 }
