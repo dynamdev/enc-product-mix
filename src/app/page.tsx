@@ -6,7 +6,14 @@ export default function Home() {
     <>
       <HeaderComponent />
       <main className="flex flex-wrap justify-center gap-4 p-4">
-        <NftCardComponent />
+        <NftCardComponent
+          videoUrl={
+            'https://ipfs.filebase.io/ipfs/QmZ5LiJvxhuSUx2RKcem2CL95Vx5wgKHqYziQWekqpwBwP'
+          }
+          title={'Ghoti #1'}
+          description={'Fish in darkness while in red skin.'}
+          mintDate={new Date()}
+        />
       </main>
     </>
   );
