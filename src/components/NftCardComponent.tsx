@@ -1,4 +1,4 @@
-interface NftCardComponentProps {
+export interface NftCardComponentProps {
   videoUrl: string;
   title: string;
   description: string;

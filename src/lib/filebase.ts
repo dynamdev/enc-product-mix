@@ -99,21 +99,23 @@ interface PinnedObjectFilters {
   meta?: object;
 }
 
-export async function getPinnedObjects(filters?: PinnedObjectFilters): Promise<
-  {
-    created: Date;
-    delegates: string[];
-    info: { size: number };
-    pin: {
-      cid: string;
-      meta: {};
-      name: string;
-      origins: [];
-    };
-    requestid: string;
-    status: string;
-  }[]
-> {
+export interface GetPinnedObjectsResponse {
+  created: Date;
+  delegates: string[];
+  info: { size: number };
+  pin: {
+    cid: string;
+    meta: {};
+    name: string;
+    origins: [];
+  };
+  requestid: string;
+  status: string;
+}
+
+export async function getPinnedObjects(
+  filters?: PinnedObjectFilters,
+): Promise<GetPinnedObjectsResponse[]> {
   try {
     const headers = {
       Authorization: `Bearer ${process.env.FILEBASE_API_BEARER_TOKEN}`,
