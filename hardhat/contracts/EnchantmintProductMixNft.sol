@@ -14,25 +14,40 @@ contract EnchantmintProductMixNft is ERC721, ERC721Enumerable, ERC721URIStorage,
 
     // Mapping from token ID to mint date
     mapping(uint256 => uint256) private _mintDates;
-    // Mapping from NFT name to token ID
-    mapping(string => uint256) private _nameToTokenId;
+    mapping(uint256 => string) private _tokenVideoCids; // tokenId -> videoCid
+    mapping(string => uint256) private _videoCidTokens; // videoCid -> tokenId
 
     constructor() ERC721("EnchantmintProductMix", "EPM") {}
 
-    function safeMint(string memory name, string memory uri) public onlyOwner {
+    function safeMint(string memory videoCid, string memory uri) public onlyOwner {
+        require(_videoCidTokens[videoCid] == 0, "Video CID already used");
+
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(owner(), tokenId);
         _setTokenURI(tokenId, uri);
 
         _mintDates[tokenId] = block.timestamp;  // Store the mint date
-        _nameToTokenId[name] = tokenId;  // Store the token ID for the given name
+        _tokenVideoCids[tokenId] = videoCid;    // Store the videoCid for the tokenId
+        _videoCidTokens[videoCid] = tokenId;    // Store the tokenId for the videoCid
     }
 
-    function getMintDateByName(string memory name) public view returns (uint256) {
-        uint256 tokenId = _nameToTokenId[name];
-        require(tokenId != 0, "Name not found");
-        return _mintDates[tokenId];
+    function getMintDateByTokenId(uint256 tokenId) public view returns (uint256) {
+        uint256 mintDate = _mintDates[tokenId];
+        require(mintDate != 0, "Token not found");
+        return mintDate;
+    }
+
+    function getTokenIdByVideoCid(string memory videoCid) public view returns (uint256) {
+        uint256 tokenId = _videoCidTokens[videoCid];
+        require(tokenId != 0, "Video CID not found");
+        return tokenId;
+    }
+
+    function getVideoCidByTokenId(uint256 tokenId) public view returns (string memory) {
+        string memory videoCid = _tokenVideoCids[tokenId];
+        require(bytes(videoCid).length > 0, "Token ID not found");
+        return videoCid;
     }
 
     // The following functions are overrides required by Solidity.
