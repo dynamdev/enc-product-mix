@@ -1,8 +1,15 @@
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, MutableRefObject, useRef, useState } from 'react';
 import { Store } from 'react-notifications-component';
 import axios from 'axios';
+import { useNfts } from '@/hooks/useNfts';
 
-export const UploadFileToFilebaseFormComponent = () => {
+export const UploadFileToFilebaseFormComponent = (props: {
+  modalRef: MutableRefObject<HTMLDialogElement | null>;
+}) => {
+  const { addNft } = useNfts();
+
+  const { modalRef } = props;
+
   const refFrom = useRef<HTMLFormElement | null>(null);
 
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
@@ -56,9 +63,8 @@ export const UploadFileToFilebaseFormComponent = () => {
     axios
       .put('/api/filebase', formData)
       .then((response) => {
-        console.log(response.data.jsonCid);
-
-        //TODO: create context for nfts and create a function to add new data by loading new jsoncid
+        addNft(response.data.jsonCid);
+        modalRef.current!.close();
       })
       .finally(() => {
         setButtonUploadIpfsText('Upload to IPFS');

@@ -40,7 +40,7 @@ export const UploadToFilebaseFabComponent = () => {
             </button>
           </form>
           <h3 className="font-bold text-lg mb-4">Upload File to Filebase</h3>
-          <UploadFileToFilebaseFormComponent />
+          <UploadFileToFilebaseFormComponent modalRef={refModal} />
         </div>
       </dialog>
     </>
