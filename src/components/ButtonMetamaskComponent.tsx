@@ -5,11 +5,27 @@ import { useMetamask } from '@/hooks/useMetamask';
 export const ButtonMetamaskComponent = () => {
   const { accounts, connect } = useMetamask();
 
+  const formatAddress = (str: string) => {
+    // Ensure the string has at least 6 characters
+    if (str.length < 6) {
+      return str;
+    }
+
+    // Get the first two characters
+    const start = str.substring(0, 2);
+
+    // Get the last four characters
+    const end = str.substring(str.length - 4);
+
+    // Combine the parts
+    return start + '...' + end;
+  };
+
   return (
     <>
       <button
         type="button"
-        className="border focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center focus:ring-gray-600 bg-gray-800 border-gray-700 text-white hover:bg-gray-700 mx-4"
+        className="btn bg-white my-auto mx-4"
         onClick={() => {
           connect().then(() => {});
         }}
@@ -453,7 +469,7 @@ export const ButtonMetamaskComponent = () => {
           </defs>{' '}
         </svg>
         {accounts.length === 0 && 'Connect with MetaMask'}
-        {accounts.length !== 0 && accounts[0]}
+        {accounts.length !== 0 && 'Connected: ' + formatAddress(accounts[0])}
       </button>
     </>
   );

@@ -79,7 +79,7 @@ export default function Home() {
                 videoUrl={nft.videoUrl}
                 title={nft.title}
                 description={nft.description}
-                mintDate={nft.mintDate}
+                mintDate={index === 0 ? new Date() : nft.mintDate}
               />
             );
           })}

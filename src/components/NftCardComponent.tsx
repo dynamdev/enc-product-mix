@@ -10,8 +10,8 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
 
   return (
     <>
-      <div className="max-w-xs border rounded-lg shadow bg-gray-800 border-gray-700">
-        <div
+      <div className="card w-96 bg-base-100 shadow-lg">
+        <figure
           className={
             'aspect-video bg-black w-full rounded-t-lg text-center flex flex-col justify-center'
           }
@@ -23,28 +23,30 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
             muted={true}
             src={videoUrl}
           />
-        </div>
-        <div className="flex flex-col p-5">
-          <h5 className="mb-2 text-2xl font-bold tracking-tight text-white">
-            {title}
-          </h5>
-          <p className="mb-3 font-normal text-gray-400">{description}</p>
-          {mintDate === null && (
-            <button
-              className={'btn btn-primary text-primary-content mx-auto w-full'}
-            >
-              Mint
-            </button>
-          )}
-          {mintDate !== null && (
-            <div
-              className={
-                'h-12 font-bold bg-secondary rounded-lg text-secondary-content mx-auto w-full text-center flex flex-col justify-center'
-              }
-            >
-              Minted: {mintDate.toDateString()}
-            </div>
-          )}
+        </figure>
+        <div className="card-body p-4">
+          <h2 className="card-title">{title}</h2>
+          <p>{description}</p>
+          <div className="card-actions">
+            {mintDate === null && (
+              <button
+                className={
+                  'btn btn-primary text-primary-content mx-auto w-full'
+                }
+              >
+                Mint
+              </button>
+            )}
+            {mintDate !== null && (
+              <div
+                className={
+                  'h-12 font-bold bg-secondary rounded-lg text-secondary-content mx-auto w-full text-center flex flex-col justify-center'
+                }
+              >
+                Minted: {mintDate.toDateString()}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
