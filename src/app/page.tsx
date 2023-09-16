@@ -7,38 +7,41 @@ import {
 import { HeaderComponent } from '@/components/HeaderComponent';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GetPinnedObjectsResponse } from '@/lib/filebase';
-import { useMetamask } from '@/hooks/useMetamask';
 import axios from 'axios';
+import dynamic from 'next/dynamic';
 
 export default function Home() {
   const [nfts, setNfts] = useState<NftCardComponentProps[]>([]);
 
-  const refreshMetadata = useCallback(() => {
-    const loadMetadata = (jsonCid: string) => {
-      const baseUrl = 'https://ipfs.filebase.io/ipfs/';
-      axios.get(baseUrl + jsonCid).then((response) => {
-        const data: {
-          name: string;
-          description: string;
-          animation_url: string;
-        } = response.data;
-        setNfts((nfts) => {
-          nfts.push({
-            mintDate: null,
-            description: data.description,
-            title: data.name,
-            videoUrl: data.animation_url,
-          });
-          return nfts;
-        });
-      });
-    };
+  const loadMetadata = (jsonCid: string) => {
+    const baseUrl = 'https://ipfs.filebase.io/ipfs/';
+    return axios.get(baseUrl + jsonCid).then((response) => {
+      const data: {
+        name: string;
+        description: string;
+        animation_url: string;
+      } = response.data;
 
+      return {
+        mintDate: null,
+        description: data.description,
+        title: data.name,
+        videoUrl: data.animation_url,
+      };
+    });
+  };
+
+  const refreshMetadata = useCallback(() => {
     axios.get('/api/filebase').then((response) => {
       const data: GetPinnedObjectsResponse[] = response.data.metadata;
-      for (let datum of data) {
-        loadMetadata(datum.pin.cid);
-      }
+      const promises = data.map((datum) => loadMetadata(datum.pin.cid));
+
+      Promise.all(promises).then((results) => {
+        results.sort((a, b) => {
+          return a.title.localeCompare(b.title);
+        });
+        setNfts((prev) => [...prev, ...results]);
+      });
     });
   }, []);
 
@@ -57,7 +60,7 @@ export default function Home() {
               videoUrl={nft.videoUrl}
               title={nft.title}
               description={nft.description}
-              mintDate={index === 0 ? new Date('sep 10 2023') : nft.mintDate}
+              mintDate={nft.mintDate}
             />
           );
         })}
