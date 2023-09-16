@@ -11,6 +11,7 @@ import axios from 'axios';
 import dynamic from 'next/dynamic';
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
   const [nfts, setNfts] = useState<NftCardComponentProps[]>([]);
 
   const loadMetadata = (jsonCid: string) => {
@@ -32,6 +33,9 @@ export default function Home() {
   };
 
   const refreshMetadata = useCallback(() => {
+    setIsLoading(true);
+    setNfts([]);
+
     axios.get('/api/filebase').then((response) => {
       const data: GetPinnedObjectsResponse[] = response.data.metadata;
       const promises = data.map((datum) => loadMetadata(datum.pin.cid));
@@ -41,6 +45,7 @@ export default function Home() {
           return a.title.localeCompare(b.title);
         });
         setNfts((prev) => [...prev, ...results]);
+        setIsLoading(false);
       });
     });
   }, []);
@@ -53,17 +58,30 @@ export default function Home() {
     <>
       <HeaderComponent />
       <main className="flex flex-wrap justify-center gap-4 p-4">
-        {nfts.map((nft, index) => {
-          return (
-            <NftCardComponent
-              key={'nft_' + index}
-              videoUrl={nft.videoUrl}
-              title={nft.title}
-              description={nft.description}
-              mintDate={nft.mintDate}
-            />
-          );
-        })}
+        {isLoading && (
+          <>
+            <span className="loading loading-dots loading-lg h-96"></span>
+          </>
+        )}
+
+        {!isLoading && nfts.length === 0 && (
+          <div className={'h-96 flex flex-col justify-center text-lg'}>
+            No Data
+          </div>
+        )}
+
+        {!isLoading &&
+          nfts.map((nft, index) => {
+            return (
+              <NftCardComponent
+                key={'nft_' + index}
+                videoUrl={nft.videoUrl}
+                title={nft.title}
+                description={nft.description}
+                mintDate={nft.mintDate}
+              />
+            );
+          })}
       </main>
     </>
   );
