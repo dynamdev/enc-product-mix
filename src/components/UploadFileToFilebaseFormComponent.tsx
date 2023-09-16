@@ -4,11 +4,11 @@ import axios from 'axios';
 import { useNfts } from '@/hooks/useNfts';
 
 export const UploadFileToFilebaseFormComponent = (props: {
-  modalRef: MutableRefObject<HTMLDialogElement | null>;
+  toggleModel: () => void;
 }) => {
   const { addNft } = useNfts();
 
-  const { modalRef } = props;
+  const { toggleModel } = props;
 
   const refFrom = useRef<HTMLFormElement | null>(null);
 
@@ -64,7 +64,7 @@ export const UploadFileToFilebaseFormComponent = (props: {
       .put('/api/filebase', formData)
       .then((response) => {
         addNft(response.data.jsonCid);
-        modalRef.current!.close();
+        toggleModel();
       })
       .finally(() => {
         setButtonUploadIpfsText('Upload to IPFS');

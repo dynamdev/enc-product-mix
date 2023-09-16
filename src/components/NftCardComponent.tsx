@@ -1,3 +1,5 @@
+import { Store } from 'react-notifications-component';
+
 export interface NftCardComponentProps {
   videoUrl: string;
   title: string;
@@ -7,6 +9,20 @@ export interface NftCardComponentProps {
 
 export const NftCardComponent = (props: NftCardComponentProps) => {
   const { videoUrl, title, description, mintDate } = props;
+
+  const onClickMint = () => {
+    console.log('success');
+    Store.addNotification({
+      type: 'success',
+      message: 'Minting!',
+      container: 'top-right',
+      dismiss: {
+        duration: 3000,
+        onScreen: true,
+        showIcon: true,
+      },
+    });
+  };
 
   return (
     <>
@@ -33,6 +49,7 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
                 className={
                   'btn btn-primary text-primary-content mx-auto w-full'
                 }
+                onClick={onClickMint}
               >
                 Mint
               </button>

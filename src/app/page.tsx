@@ -7,12 +7,14 @@ import {
 import { HeaderComponent } from '@/components/HeaderComponent';
 import { UploadToFilebaseFabComponent } from '@/components/UploadToFilebaseFabComponent';
 import { useNfts } from '@/hooks/useNfts';
+import { ReactNotifications } from 'react-notifications-component';
 
 export default function Home() {
   const { nfts, isLoading } = useNfts();
 
   return (
     <>
+      <ReactNotifications />
       <HeaderComponent />
       <main className="flex flex-wrap justify-center gap-4 p-4">
         {isLoading && (
