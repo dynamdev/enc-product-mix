@@ -8,8 +8,8 @@ import { HeaderComponent } from '@/components/HeaderComponent';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GetPinnedObjectsResponse } from '@/lib/filebase';
 import axios from 'axios';
-import dynamic from 'next/dynamic';
 import { UploadToFilebaseFabComponent } from '@/components/UploadToFilebaseFabComponent';
+import { ReactNotifications } from 'react-notifications-component';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +79,7 @@ export default function Home() {
                 videoUrl={nft.videoUrl}
                 title={nft.title}
                 description={nft.description}
-                mintDate={index === 0 ? new Date() : nft.mintDate}
+                mintDate={nft.mintDate}
               />
             );
           })}
