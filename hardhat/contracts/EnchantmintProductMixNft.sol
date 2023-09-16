@@ -38,6 +38,17 @@ contract EnchantmintProductMixNft is ERC721, ERC721Enumerable, ERC721URIStorage,
         return mintDate;
     }
 
+    function getMintDateByVideoCid(string memory videoCid) public view returns (uint256) {
+        uint256 tokenId = _videoCidTokens[videoCid];
+        require(tokenId != 0, "Video CID not found");
+
+        uint256 mintDate = _mintDates[tokenId];
+        require(mintDate != 0, "Token not found for the given Video CID");
+
+        return mintDate;
+    }
+
+
     function getTokenIdByVideoCid(string memory videoCid) public view returns (uint256) {
         uint256 tokenId = _videoCidTokens[videoCid];
         require(tokenId != 0, "Video CID not found");
