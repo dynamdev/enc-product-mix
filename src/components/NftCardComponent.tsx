@@ -1,4 +1,6 @@
 import { Store } from 'react-notifications-component';
+import { useMetamask } from '@/hooks/useMetamask';
+import { useCallback } from 'react';
 
 export interface NftCardComponentProps {
   videoUrl: string;
@@ -8,21 +10,26 @@ export interface NftCardComponentProps {
 }
 
 export const NftCardComponent = (props: NftCardComponentProps) => {
+  const { accounts } = useMetamask();
   const { videoUrl, title, description, mintDate } = props;
 
-  const onClickMint = () => {
-    console.log('success');
-    Store.addNotification({
-      type: 'success',
-      message: 'Minting!',
-      container: 'top-right',
-      dismiss: {
-        duration: 3000,
-        onScreen: true,
-        showIcon: true,
-      },
-    });
-  };
+  const onClickMint = useCallback(() => {
+    console.log(accounts);
+
+    if (accounts.length === 0) {
+      Store.addNotification({
+        type: 'danger',
+        message: 'Please connect your metamask.',
+        container: 'top-right',
+        dismiss: {
+          duration: 3000,
+          onScreen: true,
+          showIcon: true,
+        },
+      });
+      return;
+    }
+  }, [accounts]);
 
   return (
     <>
@@ -49,7 +56,9 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
                 className={
                   'btn btn-primary text-primary-content mx-auto w-full'
                 }
-                onClick={onClickMint}
+                onClick={() => {
+                  onClickMint();
+                }}
               >
                 Mint
               </button>
