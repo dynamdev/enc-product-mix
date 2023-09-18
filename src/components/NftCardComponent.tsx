@@ -1,9 +1,11 @@
 import { Store } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
 import { useCallback } from 'react';
+import { ethers } from 'ethers';
 
 export interface NftCardComponentProps {
-  videoUrl: string;
+  jsonCid: string;
+  videoCid: string;
   title: string;
   description: string;
   mintDate: Date | null;
@@ -11,11 +13,9 @@ export interface NftCardComponentProps {
 
 export const NftCardComponent = (props: NftCardComponentProps) => {
   const { accounts } = useMetamask();
-  const { videoUrl, title, description, mintDate } = props;
+  const { jsonCid, videoCid, title, description, mintDate } = props;
 
   const onClickMint = useCallback(() => {
-    console.log(accounts);
-
     if (accounts.length === 0) {
       Store.addNotification({
         type: 'danger',
@@ -29,6 +29,22 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
       });
       return;
     }
+
+    // const nftContract = new ethers.Contract(
+    //   CONTRACT_ADDRESS,
+    //   enchantmintProductMixNftAbi,
+    //   metamaskSigner,
+    // );
+    //
+    // const videoCid = videoUrl.split('/').pop();
+    //
+    // nftContract
+    //   .ownerMint('https://ipfs.io/ipfs/' + jsonCid)
+    //   .then(() => {
+    //     toast({
+    //       title: 'Successfully minted ' + jsonCid,
+    //     });
+    //   });
   }, [accounts]);
 
   return (
@@ -44,7 +60,7 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
             autoPlay={true}
             loop={true}
             muted={true}
-            src={videoUrl}
+            src={'https://ipfs.filebase.io/ipfs/' + videoCid}
           />
         </figure>
         <div className="card-body p-4">

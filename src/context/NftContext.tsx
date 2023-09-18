@@ -25,7 +25,9 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [nfts, setNfts] = useState<NftCardComponentProps[]>([]);
 
-  const loadMetadata = async (jsonCid: string) => {
+  const loadMetadata = async (
+    jsonCid: string,
+  ): Promise<NftCardComponentProps> => {
     const baseUrl = 'https://ipfs.filebase.io/ipfs/';
     const response = await axios.get(baseUrl + jsonCid);
     const data: {
@@ -37,7 +39,8 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       mintDate: null,
       description: data.description,
       title: data.name,
-      videoUrl: data.animation_url,
+      videoCid: data.animation_url.split('/').pop()!,
+      jsonCid: jsonCid,
     };
   };
 

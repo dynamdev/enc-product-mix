@@ -34,7 +34,8 @@ export default function Home() {
             return (
               <NftCardComponent
                 key={'nft_' + index}
-                videoUrl={nft.videoUrl}
+                videoCid={nft.videoCid}
+                jsonCid={nft.jsonCid}
                 title={nft.title}
                 description={nft.description}
                 mintDate={nft.mintDate}
