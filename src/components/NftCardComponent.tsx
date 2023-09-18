@@ -2,6 +2,7 @@ import { Store } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
 import { useCallback } from 'react';
 import { ethers } from 'ethers';
+import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 
 export interface NftCardComponentProps {
   jsonCid: string;
@@ -12,7 +13,7 @@ export interface NftCardComponentProps {
 }
 
 export const NftCardComponent = (props: NftCardComponentProps) => {
-  const { accounts } = useMetamask();
+  const { accounts, signer } = useMetamask();
   const { jsonCid, videoCid, title, description, mintDate } = props;
 
   const onClickMint = useCallback(() => {
@@ -30,22 +31,18 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
       return;
     }
 
-    // const nftContract = new ethers.Contract(
-    //   CONTRACT_ADDRESS,
-    //   enchantmintProductMixNftAbi,
-    //   metamaskSigner,
-    // );
-    //
-    // const videoCid = videoUrl.split('/').pop();
-    //
-    // nftContract
-    //   .ownerMint('https://ipfs.io/ipfs/' + jsonCid)
-    //   .then(() => {
-    //     toast({
-    //       title: 'Successfully minted ' + jsonCid,
-    //     });
-    //   });
-  }, [accounts]);
+    const nftContract = new ethers.Contract(
+      process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+      enchantmintProductMixNftAbi,
+      signer! as any,
+    );
+
+    nftContract
+      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
+      .then((result) => {
+        console.log(result);
+      });
+  }, [accounts.length, jsonCid, signer, videoCid]);
 
   return (
     <>
