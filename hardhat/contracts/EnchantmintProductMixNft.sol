@@ -17,19 +17,22 @@ contract EnchantmintProductMixNft is ERC721, ERC721Enumerable, ERC721URIStorage,
     mapping(uint256 => string) private _tokenVideoCids; // tokenId -> videoCid
     mapping(string => uint256) private _videoCidTokens; // videoCid -> tokenId
 
-    constructor() ERC721("EnchantmintProductMix", "EPM") {}
+    constructor() ERC721("EnchantmintProductMix", "EPM") {
+        _tokenIdCounter.increment();  // Start the counter at 1
+    }
 
     function safeMint(string memory videoCid, string memory uri) public onlyOwner {
         require(_videoCidTokens[videoCid] == 0, "Video CID already used");
 
         uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
         _safeMint(owner(), tokenId);
         _setTokenURI(tokenId, uri);
 
         _mintDates[tokenId] = block.timestamp;  // Store the mint date
         _tokenVideoCids[tokenId] = videoCid;    // Store the videoCid for the tokenId
         _videoCidTokens[videoCid] = tokenId;    // Store the tokenId for the videoCid
+
+        _tokenIdCounter.increment();
     }
 
     function getMintDateByTokenId(uint256 tokenId) public view returns (uint256) {

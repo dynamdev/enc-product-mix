@@ -36,49 +36,49 @@ describe('EnchantmintProductMixNft', function () {
     it('Should not allow minting with the same videoCid', async function () {
       const videoCid: string = 'Qm...';
       const uri: string = 'https://example.com/uri';
+      await enchantmintProductMixNft.safeMint(videoCid, uri);
       await expect(
-        await enchantmintProductMixNft.safeMint(videoCid, uri),
+        enchantmintProductMixNft.safeMint(videoCid, uri),
       ).to.be.revertedWith('Video CID already used');
     });
   });
 
-  // describe('Queries', function () {
-  //   const videoCid: string = 'Qm...';
-  //   const uri: string = 'https://example.com/uri';
-  //
-  //   beforeEach(async function () {
-  //     await enchantmintProductMixNft.safeMint(videoCid, uri);
-  //   });
-  //
-  //   it('Should get mintDate by token ID', async function () {
-  //     const mintDate: any = await enchantmintProductMixNft.getMintDateByTokenId(
-  //       0,
-  //     );
-  //     expect(mintDate).to.be.within(
-  //       Math.floor(Date.now() / 1000) - 10,
-  //       Math.floor(Date.now() / 1000),
-  //     );
-  //   });
-  //
-  //   it('Should get mintDate by videoCid', async function () {
-  //     const mintDate: any =
-  //       await enchantmintProductMixNft.getMintDateByVideoCid(videoCid);
-  //     expect(mintDate).to.be.within(
-  //       Math.floor(Date.now() / 1000) - 10,
-  //       Math.floor(Date.now() / 1000),
-  //     );
-  //   });
-  //
-  //   it('Should get token ID by videoCid', async function () {
-  //     expect(
-  //       await enchantmintProductMixNft.getTokenIdByVideoCid(videoCid),
-  //     ).to.equal(0);
-  //   });
-  //
-  //   it('Should get videoCid by token ID', async function () {
-  //     expect(await enchantmintProductMixNft.getVideoCidByTokenId(0)).to.equal(
-  //       videoCid,
-  //     );
-  //   });
-  // });
+  describe('Queries', function () {
+    const videoCid: string = 'Qm...';
+    const uri: string = 'https://example.com/uri';
+
+    beforeEach(async function () {
+      await enchantmintProductMixNft.safeMint(videoCid, uri);
+    });
+
+    it('Should get mintDate by token ID', async function () {
+      const mintDate: any =
+        await enchantmintProductMixNft.getMintDateByTokenId(1);
+      expect(parseInt(mintDate)).to.be.within(
+        Math.round(new Date().getTime() / 1000),
+        Math.round(new Date().getTime() / 1000) + 10,
+      );
+    });
+
+    it('Should get mintDate by videoCid', async function () {
+      const mintDate: any =
+        await enchantmintProductMixNft.getMintDateByVideoCid(videoCid);
+      expect(mintDate).to.be.within(
+        Math.round(new Date().getTime() / 1000),
+        Math.round(new Date().getTime() / 1000) + 10,
+      );
+    });
+
+    it('Should get token ID by videoCid', async function () {
+      expect(
+        await enchantmintProductMixNft.getTokenIdByVideoCid(videoCid),
+      ).to.equal(1);
+    });
+
+    it('Should get videoCid by token ID', async function () {
+      expect(await enchantmintProductMixNft.getVideoCidByTokenId(1)).to.equal(
+        videoCid,
+      );
+    });
+  });
 });
