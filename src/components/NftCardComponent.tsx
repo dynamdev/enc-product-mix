@@ -77,8 +77,24 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
     nftContract
       .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
       .then((response) => {
-        console.log(response);
         setMintDate(new Date());
+        Store.addNotification({
+          type: 'success',
+          message: 'Successfully mint!',
+          container: 'top-right',
+          onRemoval: () => {
+            window.open('https://etherscan.io/tx/' + response.hash);
+          },
+          dismiss: {
+            duration: 3000,
+            onScreen: true,
+            showIcon: true,
+          },
+        });
+      })
+      .catch((e) => {
+        let errorMsg = e.data?.message || e.message || 'An error occurred.';
+        console.error(e);
       })
       .finally(() => {
         setIsLoading(false);
