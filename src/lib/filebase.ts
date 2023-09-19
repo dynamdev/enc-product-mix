@@ -127,8 +127,6 @@ export async function getPinnedObjects(
       params: filters,
     });
 
-    console.log(response);
-
     if (response.status === 200) {
       return response.data.results;
     } else {

@@ -36,7 +36,6 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       animation_url: string;
     } = response.data;
     return {
-      mintDate: null,
       description: data.description,
       title: data.name,
       videoCid: data.animation_url.split('/').pop()!,

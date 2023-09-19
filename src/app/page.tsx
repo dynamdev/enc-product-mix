@@ -38,7 +38,6 @@ export default function Home() {
                 jsonCid={nft.jsonCid}
                 title={nft.title}
                 description={nft.description}
-                mintDate={nft.mintDate}
               />
             );
           })}
