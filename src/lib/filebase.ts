@@ -3,12 +3,15 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import axios from 'axios';
+import { Credentials } from 'aws-sdk';
 
 const s3 = new S3Client({
   region: 'us-east-1',
-  credentials: defaultProvider({}),
+  credentials: new Credentials({
+    accessKeyId: process.env.FILEBASE_AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.FILEBASE_AWS_SECRET_ACCESS_KEY!,
+  }),
   endpoint: 'https://s3.filebase.com',
   forcePathStyle: true,
 });
