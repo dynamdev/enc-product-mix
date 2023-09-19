@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+  exportPathMap: async function (defaultPathMap) {
+    delete defaultPathMap['/hardhat'];
+    return defaultPathMap;
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
