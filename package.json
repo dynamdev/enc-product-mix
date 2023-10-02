@@ -15,6 +15,8 @@
     "@aws-sdk/s3-request-presigner": "^3.405.0",
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
+    "@ffmpeg/ffmpeg": "^0.12.6",
+    "@ffmpeg/util": "^0.12.1",
     "@types/node": "20.6.0",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",

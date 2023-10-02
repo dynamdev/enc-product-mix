@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPinnedObjects, uploadToBucket } from '@/lib/filebase';
+import { convertMp4ToGif } from '@/lib/files';
 
 export async function GET() {
   const metadataIpfsData = await getPinnedObjects({
@@ -14,20 +15,27 @@ export async function GET() {
 export async function PUT(request: Request) {
   const data = await request.formData();
   const video: File | null = data.get('video') as unknown as File;
-  const filenameBase: string | null = data.get('filename') as unknown as string;
+  const filename: string | null = data.get('filename') as unknown as string;
   const name: string | null = data.get('name') as unknown as string;
   const description: string | null = data.get(
     'description',
   ) as unknown as string;
 
-  if (!video || !filenameBase || !name || !description) {
+  if (!video || !filename || !name || !description) {
     return NextResponse.json({ error: 'Missing parameters!' }, { status: 400 });
   }
 
-  const filenameVideo = 'video/' + filenameBase;
-  const filenameJson = 'json/' + filenameBase.split('.')[0] + '.json';
+  const filenameBase = filename.split('.')[0];
+  const filenameVideo = 'video/' + filename;
+  const filenameThumbnail = 'thumbnail/' + filenameBase + '.gif';
+  const filenameJson = 'json/' + filenameBase + '.json';
 
   await uploadToBucket('enchantmint-product-mix', filenameVideo, video);
+  await uploadToBucket(
+    'enchantmint-product-mix',
+    filenameThumbnail,
+    await convertMp4ToGif(video),
+  );
 
   let videoCid = '';
 
