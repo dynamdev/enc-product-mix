@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getPinnedObjects, uploadToBucket } from '@/lib/filebase';
-import { convertMp4ToGif } from '@/lib/files';
+import {
+  generateCID,
+  getPinnedObjects,
+  uploadToBucket,
+} from '@/api-helper/filebaseHelper';
 
 export async function GET() {
   const metadataIpfsData = await getPinnedObjects({
@@ -34,43 +37,19 @@ export async function PUT(request: Request) {
   await uploadToBucket('enchantmint-product-mix', filenameThumbnail, gif);
   await uploadToBucket('enchantmint-product-mix', filenameVideo, video);
 
-  let videoCid = '';
+  const thumbnailCid = await generateCID(filenameThumbnail, gif);
+  const videoCid = await generateCID(filenameVideo, video);
 
-  while (videoCid === '') {
-    const videoIpfsData = await getPinnedObjects({
-      status: ['pinned'],
-      limit: 1,
-    });
+  const jsonContent = JSON.stringify({
+    name: name,
+    description: description,
+    animation_url: 'https://ipfs.io/ipfs/' + videoCid,
+    image: 'https://ipfs.io/ipfs/' + thumbnailCid,
+  });
 
-    if (videoIpfsData.length === 0) continue;
-    else if (videoIpfsData[0].pin.name === filenameVideo) {
-      videoCid = videoIpfsData[0].pin.cid;
-    }
-  }
+  const jsonCid = await generateCID(filenameJson, jsonContent);
 
-  await uploadToBucket(
-    'enchantmint-product-mix',
-    filenameJson,
-    JSON.stringify({
-      name: name,
-      description: description,
-      animation_url: 'https://ipfs.filebase.io/ipfs/' + videoCid,
-    }),
-  );
-
-  let jsonCid = '';
-
-  while (jsonCid === '') {
-    const jsonIpfsData = await getPinnedObjects({
-      status: ['pinned'],
-      limit: 1,
-    });
-
-    if (jsonIpfsData.length === 0) continue;
-    else if (jsonIpfsData[0].pin.name === filenameJson) {
-      jsonCid = jsonIpfsData[0].pin.cid;
-    }
-  }
+  await uploadToBucket('enchantmint-product-mix', filenameJson, jsonContent);
 
   return NextResponse.json({ jsonCid: jsonCid });
 }
