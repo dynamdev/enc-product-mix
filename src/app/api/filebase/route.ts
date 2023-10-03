@@ -43,8 +43,8 @@ export async function PUT(request: Request) {
   const jsonContent = JSON.stringify({
     name: name,
     description: description,
-    animation_url: 'https://ipfs.io/ipfs/' + videoCid,
     image: 'https://ipfs.io/ipfs/' + thumbnailCid,
+    animation_url: 'https://ipfs.io/ipfs/' + videoCid,
   });
 
   const jsonCid = await generateCID(filenameJson, jsonContent);
