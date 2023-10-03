@@ -15,6 +15,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   const data = await request.formData();
   const video: File | null = data.get('video') as unknown as File;
+  const gif: File | null = data.get('gif') as unknown as File;
   const filename: string | null = data.get('filename') as unknown as string;
   const name: string | null = data.get('name') as unknown as string;
   const description: string | null = data.get(
@@ -30,12 +31,8 @@ export async function PUT(request: Request) {
   const filenameThumbnail = 'thumbnail/' + filenameBase + '.gif';
   const filenameJson = 'json/' + filenameBase + '.json';
 
+  await uploadToBucket('enchantmint-product-mix', filenameThumbnail, gif);
   await uploadToBucket('enchantmint-product-mix', filenameVideo, video);
-  await uploadToBucket(
-    'enchantmint-product-mix',
-    filenameThumbnail,
-    await convertMp4ToGif(video),
-  );
 
   let videoCid = '';
 

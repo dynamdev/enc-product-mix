@@ -1,7 +1,17 @@
-import { ChangeEvent, MutableRefObject, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Store } from 'react-notifications-component';
 import axios from 'axios';
 import { useNfts } from '@/hooks/useNfts';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
+
+const ffmpeg = new FFmpeg();
 
 export const UploadFileToFilebaseFormComponent = (props: {
   toggleModel: () => void;
@@ -33,7 +43,31 @@ export const UploadFileToFilebaseFormComponent = (props: {
     }
   };
 
-  const onUploadToIpfs = () => {
+  const loadFfmpeg = async () => {
+    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
+    ffmpeg.on('log', ({ message }) => {
+      console.log(message);
+    });
+    // toBlobURL is used to bypass CORS issue, urls with the same
+    // domain can be used directly.
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(
+        `${baseURL}/ffmpeg-core.wasm`,
+        'application/wasm',
+      ),
+    });
+  };
+
+  const convertVideoToGif = async (video: File): Promise<File> => {
+    await ffmpeg.writeFile('video1.mp4', await fetchFile(video));
+    await ffmpeg.exec(['-i', 'video1.mp4', '-f', 'gif', 'out.gif']);
+    const data = await ffmpeg.readFile('out.gif');
+    const blob = new Blob([data], { type: 'image/gif' });
+    return new File([blob], 'converted.gif', { type: 'image/gif' });
+  };
+
+  const onUploadToIpfs = async () => {
     if (refFrom.current === null) return;
 
     const isFormValid = refFrom.current.checkValidity();
@@ -56,6 +90,7 @@ export const UploadFileToFilebaseFormComponent = (props: {
 
     const formData = new FormData();
     formData.append('video', selectedVideo!);
+    formData.append('gif', await convertVideoToGif(selectedVideo!));
     formData.append('filename', filename);
     formData.append('name', name);
     formData.append('description', description);
@@ -77,6 +112,10 @@ export const UploadFileToFilebaseFormComponent = (props: {
         setDescription('');
       });
   };
+
+  useEffect(() => {
+    loadFfmpeg().then();
+  }, []);
 
   return (
     <>
@@ -168,7 +207,7 @@ export const UploadFileToFilebaseFormComponent = (props: {
       <button
         className={'btn btn-primary w-full'}
         onClick={() => {
-          onUploadToIpfs();
+          onUploadToIpfs().then();
         }}
         disabled={isButtonUploadIpfsLoading}
       >
