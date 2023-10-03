@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { NftCardComponentProps } from '@/components/NftCardComponent';
 import axios from 'axios';
-import { GetPinnedObjectsResponse } from '@/lib/filebase';
+import { GetPinnedObjectsResponse } from '@/api-helper/filebaseHelper';
 
 export const NftContext = createContext<{
   isLoading: boolean;
