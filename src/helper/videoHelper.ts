@@ -15,7 +15,15 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
   });
 
   await ffmpeg.writeFile('video1.mp4', await fetchFile(video));
-  await ffmpeg.exec(['-i', 'video1.mp4', '-f', 'gif', 'out.gif']);
+  await ffmpeg.exec([
+    '-i',
+    'video1.mp4',
+    '-vf',
+    'scale=500:-1',
+    '-f',
+    'gif',
+    'out.gif',
+  ]);
   const data = await ffmpeg.readFile('out.gif');
   const blob = new Blob([data], { type: 'image/gif' });
   return new File([blob], 'converted.gif', { type: 'image/gif' });

@@ -38,7 +38,7 @@ export const UploadToFilebaseFabComponent = () => {
       </div>
 
       <div className={'modal ' + (isModalOpen ? 'modal-open' : '')}>
-        <div className="modal-box">
+        <div className="modal-box overflow-hidden">
           <form method="dialog">
             <button
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"

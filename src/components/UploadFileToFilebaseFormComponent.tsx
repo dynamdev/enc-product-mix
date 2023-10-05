@@ -154,10 +154,9 @@ export const UploadFileToFilebaseFormComponent = (props: {
           <label className="label">
             <span className="label-text">Description</span>
           </label>
-          <input
-            type="text"
+          <textarea
             placeholder="Description"
-            className="input input-bordered w-full"
+            className="textarea textarea-bordered"
             required={true}
             value={description}
             onChange={(e) => {
