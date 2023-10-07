@@ -1,15 +1,14 @@
 import { useRef, useState } from 'react';
-import { UploadFileToFilebaseFormComponent } from '@/components/UploadFileToFilebaseFormComponent';
+import {
+  UploadFileToFilebaseModalComponent,
+  UploadFileToFilebaseModalComponentElement,
+} from '@/components/UploadFileToFilebaseModalComponent';
 import { ReactNotifications } from 'react-notifications-component';
 
 export const UploadToFilebaseFabComponent = () => {
-  const refModal = useRef<HTMLDialogElement | null>(null);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const toggleModal = () => {
-    setIsModalOpen((prevState) => !prevState);
-  };
+  const refModal = useRef<UploadFileToFilebaseModalComponentElement | null>(
+    null,
+  );
 
   return (
     <>
@@ -18,7 +17,9 @@ export const UploadToFilebaseFabComponent = () => {
           'bg-primary text-primary-content rounded-full w-14 h-14 flex flex-col justify-center cursor-pointer fixed bottom-0 right-0 mx-8 my-8 tooltip tooltip-left border border-1 border-primary-focus'
         }
         data-tip="Upload File to Filebase"
-        onClick={toggleModal}
+        onClick={() => {
+          refModal.current?.toggleModal();
+        }}
       >
         <svg
           fill="none"
@@ -36,21 +37,7 @@ export const UploadToFilebaseFabComponent = () => {
           ></path>
         </svg>
       </div>
-
-      <div className={'modal ' + (isModalOpen ? 'modal-open' : '')}>
-        <div className="modal-box overflow-hidden">
-          <form method="dialog">
-            <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              onClick={toggleModal}
-            >
-              ✕
-            </button>
-          </form>
-          <h3 className="font-bold text-lg mb-4">Upload File to Filebase</h3>
-          <UploadFileToFilebaseFormComponent toggleModel={toggleModal} />
-        </div>
-      </div>
+      <UploadFileToFilebaseModalComponent ref={refModal} />
     </>
   );
 };
