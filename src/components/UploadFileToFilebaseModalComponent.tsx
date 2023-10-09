@@ -1,7 +1,6 @@
 import {
   ChangeEvent,
   forwardRef,
-  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -9,7 +8,6 @@ import {
 import { Store } from 'react-notifications-component';
 import axios from 'axios';
 import { useNfts } from '@/hooks/useNfts';
-import { convertVideoToGif } from '@/helper/videoHelper';
 
 export interface UploadFileToFilebaseModalComponentElement {
   toggleModal: () => void;
@@ -70,7 +68,6 @@ export const UploadFileToFilebaseModalComponent = forwardRef<
 
     const formData = new FormData();
     formData.append('video', selectedVideo!);
-    formData.append('gif', await convertVideoToGif(selectedVideo!));
     formData.append('filename', filename);
     formData.append('name', name);
     formData.append('description', description);

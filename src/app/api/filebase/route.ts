@@ -3,7 +3,8 @@ import {
   generateCID,
   getPinnedObjects,
   uploadToBucket,
-} from '@/api-helper/filebaseHelper';
+} from '@/helper/filebaseHelper';
+import { convertVideoToGif } from '@/api-helper/videoHelper';
 
 export async function GET() {
   const metadataIpfsData = await getPinnedObjects({
@@ -18,7 +19,6 @@ export async function GET() {
 export async function PUT(request: Request) {
   const data = await request.formData();
   const video: File | null = data.get('video') as unknown as File;
-  const gif: File | null = data.get('gif') as unknown as File;
   const filename: string | null = data.get('filename') as unknown as string;
   const name: string | null = data.get('name') as unknown as string;
   const description: string | null = data.get(
@@ -28,6 +28,8 @@ export async function PUT(request: Request) {
   if (!video || !filename || !name || !description) {
     return NextResponse.json({ error: 'Missing parameters!' }, { status: 400 });
   }
+
+  const gif = await convertVideoToGif(video);
 
   const filenameBase = filename.split('.')[0];
   const filenameVideo = 'video/' + filename;
