@@ -1,34 +1,22 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Enchantmint Product Mix
 
-## Getting Started
+Enchantmint Product Mix is a dynamic Next.js application that allows users to upload videos, along with names and descriptions, and mint them with ease. Utilizing IPFS for secure and decentralized storage, this app provides an intuitive platform for managing video content, creating GIF thumbnails for metadata, and minting functionalities.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+- **Video uploading**: Users can upload video content easily through a user-friendly interface.
+- **Detailed metadata**: Each video can be accompanied by a name and description, providing context and information about the content.
+- **IPFS Integration**: Videos are uploaded securely to IPFS, ensuring decentralized storage that promotes both security and availability.
+- **GIF Thumbnails**: Automatically generates a GIF thumbnail from the uploaded video to be used in metadata.
+- **Minting**: Once a video is uploaded, users have the option to mint it directly from the page.
+
+## Installation
+
+```shell
+npm install
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Support and Contribution
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+If you encounter any issues or have suggestions, please open an issue on the GitHub repository. Contributions through pull requests are also welcome.
