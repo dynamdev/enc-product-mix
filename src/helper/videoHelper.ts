@@ -14,6 +14,9 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
   });
 
+  const fps = 30;
+  const scale = 300;
+
   await ffmpeg.writeFile('video1.mp4', await fetchFile(video));
 
   // Generate a palette for better color accuracy
@@ -21,7 +24,7 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
     '-i',
     'video1.mp4',
     '-vf',
-    'fps=20,scale=500:-1:flags=lanczos,palettegen',
+    'fps=' + fps + ',scale=' + scale + ':-1:flags=lanczos,palettegen',
     'palette.png',
   ]);
 
@@ -32,7 +35,11 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
     '-i',
     'palette.png',
     '-filter_complex',
-    'fps=20,scale=500:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer',
+    'fps=' +
+      fps +
+      ',scale=' +
+      scale +
+      ':-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5',
     'out.gif',
   ]);
 

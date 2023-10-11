@@ -65,8 +65,9 @@ export const UploadFileToFilebaseModalComponent = forwardRef<
       return;
     }
 
-    setButtonUploadIpfsText('Uploading...');
     setIsButtonUploadIpfsLoading(true);
+
+    setButtonUploadIpfsText('Generating Gif from Video...');
 
     const formData = new FormData();
     formData.append('video', selectedVideo!);
@@ -75,6 +76,8 @@ export const UploadFileToFilebaseModalComponent = forwardRef<
     formData.append('name', name);
     formData.append('description', description);
 
+    setButtonUploadIpfsText('Uploading to IPFS...');
+
     axios
       .put('/api/filebase', formData)
       .then((response) => {
@@ -82,6 +85,7 @@ export const UploadFileToFilebaseModalComponent = forwardRef<
         // toggleModel();
       })
       .finally(() => {
+        setIsModalOpen(false);
         setButtonUploadIpfsText('Upload to IPFS');
         setIsButtonUploadIpfsLoading(false);
 
