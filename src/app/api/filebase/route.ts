@@ -3,7 +3,7 @@ import {
   generateCID,
   getPinnedObjects,
   uploadToBucket,
-} from '@/api-helper/filebaseHelper';
+} from '@/helper/filebaseHelper';
 
 export async function GET() {
   const metadataIpfsData = await getPinnedObjects({

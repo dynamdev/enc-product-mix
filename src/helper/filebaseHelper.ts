@@ -1,15 +1,19 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import axios from 'axios';
-import { Credentials } from 'aws-sdk';
+import { fromEnv } from '@aws-sdk/credential-provider-env';
 // @ts-ignore
 import Hash from 'ipfs-only-hash';
 
-const s3 = new S3Client({
-  region: 'us-east-1',
-  credentials: new Credentials({
+const customCredentials = () => async () => {
+  return {
     accessKeyId: process.env.FILEBASE_AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.FILEBASE_AWS_SECRET_ACCESS_KEY!,
-  }),
+  };
+};
+
+const s3 = new S3Client({
+  region: 'us-east-1',
+  credentials: customCredentials(),
   endpoint: 'https://s3.filebase.com',
   forcePathStyle: true,
 });

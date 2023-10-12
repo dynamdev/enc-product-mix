@@ -10,7 +10,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.405.0",
+    "@aws-sdk/client-s3": "^3.427.0",
     "@aws-sdk/credential-provider-node": "^3.405.0",
     "@aws-sdk/s3-request-presigner": "^3.405.0",
     "@ethersproject/abi": "^5.7.0",
