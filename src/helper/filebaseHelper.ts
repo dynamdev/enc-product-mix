@@ -1,6 +1,5 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import axios from 'axios';
-import { fromEnv } from '@aws-sdk/credential-provider-env';
 // @ts-ignore
 import Hash from 'ipfs-only-hash';
 
