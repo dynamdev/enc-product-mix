@@ -1,7 +1,5 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import axios from 'axios';
-// @ts-ignore
-import Hash from 'ipfs-only-hash';
 
 const customCredentials = () => async () => {
   return {
@@ -101,25 +99,3 @@ export async function getPinnedObjects(
     return [];
   }
 }
-
-export const generateCID = async (
-  filename: string,
-  data: File | string,
-): Promise<string> => {
-  return new Promise(async (resolve, reject) => {
-    const file: File =
-      typeof data === 'string'
-        ? new File([data], filename, {
-            type: 'text/plain',
-          })
-        : new File([await data.arrayBuffer()], filename, {
-            type: data.type,
-          });
-
-    const bytes = await file.arrayBuffer();
-    const bufferData = Buffer.from(bytes);
-
-    const cid = await Hash.of(bufferData);
-    resolve(cid);
-  });
-};

@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import {
-  generateCID,
-  getPinnedObjects,
-  uploadToBucket,
-} from '@/helper/filebaseHelper';
+import { getPinnedObjects, uploadToBucket } from '@/helper/filebaseHelper';
+import { generateCID } from '@/helper/ipfsHelper';
 
 export async function GET() {
   const metadataIpfsData = await getPinnedObjects({
