@@ -5,9 +5,6 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
   const ffmpeg = new FFmpeg();
 
   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
-  ffmpeg.on('log', ({ message }) => {
-    console.log(message);
-  });
 
   await ffmpeg.load({
     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
