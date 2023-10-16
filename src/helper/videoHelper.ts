@@ -19,7 +19,7 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
   // Generate a palette for better color accuracy
   await ffmpeg.exec([
     '-i',
-    'video1.mp4',
+    'video.mp4',
     '-vf',
     'fps=' + fps + ',scale=' + scale + ':-1:flags=lanczos,palettegen',
     'palette.png',
@@ -28,7 +28,7 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
   // Use the generated palette for the conversion
   await ffmpeg.exec([
     '-i',
-    'video1.mp4',
+    'video.mp4',
     '-i',
     'palette.png',
     '-filter_complex',
@@ -37,10 +37,10 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
       ',scale=' +
       scale +
       ':-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5',
-    'out.gif',
+    'video.gif',
   ]);
 
-  const data = await ffmpeg.readFile('out.gif');
+  const data = await ffmpeg.readFile('video.gif');
   const blob = new Blob([data], { type: 'image/gif' });
-  return new File([blob], 'converted.gif', { type: 'image/gif' });
+  return new File([blob], 'video.gif', { type: 'image/gif' });
 };
