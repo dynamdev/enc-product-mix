@@ -3,6 +3,7 @@ import { useMetamask } from '@/hooks/useMetamask';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
+import { ButtonMintNftComponent } from '@/components/ButtonMintNftComponent';
 
 export interface NftCardComponentProps {
   jsonCid: string;
@@ -12,94 +13,7 @@ export interface NftCardComponentProps {
 }
 
 export const NftCardComponent = (props: NftCardComponentProps) => {
-  const { accounts, signer } = useMetamask();
-
   const { jsonCid, videoCid, title, description } = props;
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const [mintDate, setMintDate] = useState<Date | null>(null);
-
-  const nftContract = useMemo(
-    () =>
-      new ethers.Contract(
-        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-        enchantmintProductMixNftAbi,
-        signer! as any,
-      ),
-    [signer],
-  );
-
-  useEffect(() => {
-    if (accounts.length === 0) {
-      setIsLoading(true);
-      setLoadingMessage('Please connect your Metamask');
-    } else {
-      setIsLoading(false);
-    }
-  }, [accounts.length]);
-
-  useEffect(() => {
-    if (accounts.length === 0) return;
-
-    setIsLoading(true);
-    setLoadingMessage('Checking if NFT is already minted');
-
-    nftContract
-      .getMintDateByVideoCid(videoCid)
-      .then((result) => {
-        setMintDate(new Date(parseInt(result) * 1000));
-      })
-      .catch((_) => {})
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [accounts.length, jsonCid, nftContract, videoCid]);
-
-  const onClickMint = useCallback(() => {
-    if (accounts.length === 0) {
-      Store.addNotification({
-        type: 'danger',
-        message: 'Please connect your metamask.',
-        container: 'top-right',
-        dismiss: {
-          duration: 3000,
-          onScreen: true,
-          showIcon: true,
-        },
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setLoadingMessage('Minting...');
-
-    nftContract
-      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
-      .then((response) => {
-        setMintDate(new Date());
-        Store.addNotification({
-          type: 'success',
-          message: 'Successfully mint!',
-          container: 'top-right',
-          onRemoval: () => {
-            window.open('https://etherscan.io/tx/' + response.hash);
-          },
-          dismiss: {
-            duration: 3000,
-            onScreen: true,
-            showIcon: true,
-          },
-        });
-      })
-      .catch((e) => {
-        let errorMsg = e.data?.message || e.message || 'An error occurred.';
-        console.error(e);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [accounts.length, jsonCid, nftContract, videoCid]);
 
   return (
     <>
@@ -121,40 +35,7 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
           <h2 className="card-title">{title}</h2>
           <p>{description}</p>
           <div className="card-actions">
-            {isLoading && (
-              <>
-                <button
-                  className={
-                    'btn btn-primary text-primary-content mx-auto w-full'
-                  }
-                  disabled={true}
-                >
-                  {loadingMessage}
-                </button>
-              </>
-            )}
-            {!isLoading && mintDate === null && (
-              <button
-                className={
-                  'btn btn-primary text-primary-content mx-auto w-full'
-                }
-                onClick={() => {
-                  onClickMint();
-                }}
-              >
-                Mint
-              </button>
-            )}
-            {!isLoading && mintDate !== null && (
-              <div
-                className={
-                  'h-12 font-bold bg-secondary rounded-lg text-secondary-content mx-auto w-full text-center flex flex-col justify-center'
-                }
-              >
-                Minted: {mintDate.toDateString()}{' '}
-                {mintDate.toLocaleTimeString()}
-              </div>
-            )}
+            <ButtonMintNftComponent jsonCid={jsonCid} videoCid={videoCid} />
           </div>
         </div>
       </div>
