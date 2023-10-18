@@ -2,7 +2,7 @@ import '@/styles/globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import 'react-notifications-component/dist/theme.css';
-import { NftProvider } from '@/context/NftContext';
+import { NftItemProvider } from '@/context/NftItemContext';
 import { MetamaskContext, MetamaskProvider } from '@/context/MetamaskContext';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <MetamaskProvider>
-          <NftProvider>{children}</NftProvider>
+          <NftItemProvider>{children}</NftItemProvider>
         </MetamaskProvider>
       </body>
     </html>

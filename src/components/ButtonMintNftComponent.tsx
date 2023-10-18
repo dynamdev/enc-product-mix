@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Store } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
-import { ethers, hexlify, bi } from 'ethers';
+import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -85,7 +85,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
           container: 'top-right',
           onRemoval: () => {
             window.open(
-              process.env.NEXT_PUBLIC_TRANSACTION_SCAN_URL + response.hash,
+              process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL + response.hash,
             );
           },
           dismiss: {

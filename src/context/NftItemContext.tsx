@@ -12,14 +12,14 @@ import { NftCardComponentProps } from '@/components/NftCardComponent';
 import axios from 'axios';
 import { GetPinnedObjectsResponse } from '@/helper/filebaseHelper';
 
-export const NftContext = createContext<{
+export const NftItemContext = createContext<{
   isLoading: boolean;
   nfts: NftCardComponentProps[];
   reloadNfts: () => void;
   addNft: (jsonCid: string) => void;
 } | null>(null);
 
-export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
+export const NftItemProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -72,7 +72,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   }, [reloadNfts]);
 
   return (
-    <NftContext.Provider
+    <NftItemContext.Provider
       value={{
         isLoading,
         nfts,
@@ -81,6 +81,6 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       }}
     >
       {children}
-    </NftContext.Provider>
+    </NftItemContext.Provider>
   );
 };
