@@ -4,7 +4,8 @@ import { useMetamask } from '@/hooks/useMetamask';
 import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { BigNumber } from '@ethersproject/bignumber';
-import { useNftContract } from '@/hooks/useNftContract';
+import { useSmartContract } from '@/hooks/useSmartContract';
+import { getSmartContractCleanErrorMessage } from '@/helper/smartContractHelper';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -15,7 +16,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   const { jsonCid, videoCid } = props;
 
   const { accounts, signer } = useMetamask();
-  const { contract, contractOwner } = useNftContract();
+  const { contract, contractOwner } = useSmartContract();
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -91,9 +92,10 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         });
       })
       .catch((error) => {
+        console.log(error);
         Store.addNotification({
           type: 'danger',
-          message: error.message,
+          message: getSmartContractCleanErrorMessage(error),
           container: 'top-right',
           dismiss: {
             duration: 3000,

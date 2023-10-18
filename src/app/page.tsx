@@ -6,11 +6,11 @@ import {
 } from '@/components/NftCardComponent';
 import { HeaderComponent } from '@/components/HeaderComponent';
 import { UploadToFilebaseFabComponent } from '@/components/UploadToFilebaseFabComponent';
-import { useNftItems } from '@/hooks/useNftItems';
+import { useNft } from '@/hooks/useNft';
 import { ReactNotifications } from 'react-notifications-component';
 
 export default function Home() {
-  const { nfts, isLoading } = useNftItems();
+  const { nfts, isLoading } = useNft();
 
   return (
     <>

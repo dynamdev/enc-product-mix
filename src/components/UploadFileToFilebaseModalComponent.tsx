@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { Store } from 'react-notifications-component';
 import axios from 'axios';
-import { useNftItems } from '@/hooks/useNftItems';
+import { useNft } from '@/hooks/useNft';
 import { convertVideoToGif } from '@/helper/videoHelper';
 
 export interface UploadFileToFilebaseModalComponentElement {
@@ -20,7 +20,7 @@ export const UploadFileToFilebaseModalComponent = forwardRef<
   UploadFileToFilebaseModalComponentElement,
   {}
 >(({}, ref) => {
-  const { addNft } = useNftItems();
+  const { addNft } = useNft();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
 

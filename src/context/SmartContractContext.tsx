@@ -11,12 +11,12 @@ import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { useMetamask } from '@/hooks/useMetamask';
 
-export const NftContractContext = createContext<{
+export const SmartContractContext = createContext<{
   contract: ethers.Contract | null;
   contractOwner: string | null;
 } | null>(null);
 
-export const NftContractProvider: FunctionComponent<{
+export const SmartContractProvider: FunctionComponent<{
   children: ReactNode;
 }> = ({ children }) => {
   const { signer } = useMetamask();
@@ -57,13 +57,13 @@ export const NftContractProvider: FunctionComponent<{
   }, [contract]);
 
   return (
-    <NftContractContext.Provider
+    <SmartContractContext.Provider
       value={{
         contract,
         contractOwner,
       }}
     >
       {children}
-    </NftContractContext.Provider>
+    </SmartContractContext.Provider>
   );
 };
