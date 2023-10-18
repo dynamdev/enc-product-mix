@@ -7,7 +7,7 @@ import {
   Network,
   Web3Provider,
 } from '@ethersproject/providers';
-import { parseUnits } from 'ethers';
+import { getAddress, parseUnits } from 'ethers';
 
 declare global {
   interface Window {
@@ -85,10 +85,13 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
   const connect = async () => {
     const provider = setupProvider();
     const accounts: string[] = await provider.send('eth_requestAccounts', []);
+    const checksumAccounts: string[] = accounts.map((account) =>
+      getAddress(account),
+    );
     const network: Network = await provider.getNetwork();
     const signer: JsonRpcSigner = provider.getSigner();
     setNetwork(network);
-    setAccounts(accounts);
+    setAccounts(checksumAccounts);
     setSigner(signer);
   };
 

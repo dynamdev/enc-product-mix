@@ -4,6 +4,7 @@ import { useMetamask } from '@/hooks/useMetamask';
 import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { BigNumber } from '@ethersproject/bignumber';
+import { useNftContract } from '@/hooks/useNftContract';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -14,66 +15,60 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   const { jsonCid, videoCid } = props;
 
   const { accounts, signer } = useMetamask();
+  const { contract, contractOwner } = useNftContract();
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [mintDate, setMintDate] = useState<Date | null>(null);
 
-  const nftContract = useMemo(
-    () =>
-      new ethers.Contract(
-        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-        enchantmintProductMixNftAbi,
-        signer! as any,
-      ),
-    [signer],
-  );
-
   useEffect(() => {
     if (accounts.length === 0) {
       setIsLoading(true);
       setLoadingMessage('Please connect your Metamask');
-    } else {
-      setIsLoading(false);
+      return;
     }
-  }, [accounts.length]);
 
-  useEffect(() => {
-    if (accounts.length === 0) return;
+    if (contractOwner === null) {
+      setIsLoading(true);
+      setLoadingMessage('Checking the owner of the contract!');
+      return;
+    }
 
-    setIsLoading(true);
-    setLoadingMessage('Checking if NFT is already minted');
+    if (accounts[0] !== contractOwner) {
+      setIsLoading(true);
+      setLoadingMessage('You are not the contract owner!');
+      return;
+    }
 
-    nftContract
-      .getMintDateByVideoCid(videoCid)
-      .then((result) => {
-        setMintDate(new Date(parseInt(result) * 1000));
-      })
-      .catch((_) => {})
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [accounts.length, jsonCid, nftContract, videoCid]);
-
-  const onClickMint = useCallback(() => {
-    if (accounts.length === 0) {
-      Store.addNotification({
-        type: 'danger',
-        message: 'Please connect your metamask.',
-        container: 'top-right',
-        dismiss: {
-          duration: 3000,
-          onScreen: true,
-          showIcon: true,
-        },
-      });
+    if (contract === null) {
+      setIsLoading(true);
+      setLoadingMessage("Can't load the smart contract!");
       return;
     }
 
     setIsLoading(true);
+    setLoadingMessage('Checking if NFT is already minted');
+
+    contract
+      .getMintDateByVideoCid(videoCid)
+      .then((result) => {
+        setMintDate(new Date(parseInt(result) * 1000));
+      })
+      .catch(() => {})
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [accounts, accounts.length, contract, contractOwner, videoCid]);
+
+  const onClickMint = useCallback(() => {
+    if (accounts.length === 0) return;
+    if (accounts[0] !== contractOwner) return;
+    if (contract === null) return;
+
+    setIsLoading(true);
     setLoadingMessage('Minting...');
 
-    nftContract
+    contract
       .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid, {
         gasLimit: BigNumber.from(250000).toHexString(),
       })
@@ -95,14 +90,22 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
           },
         });
       })
-      .catch((e) => {
-        let errorMsg = e.data?.message || e.message || 'An error occurred.';
-        console.error(e);
+      .catch((error) => {
+        Store.addNotification({
+          type: 'danger',
+          message: error.message,
+          container: 'top-right',
+          dismiss: {
+            duration: 3000,
+            onScreen: true,
+            showIcon: true,
+          },
+        });
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [accounts.length, jsonCid, nftContract, videoCid]);
+  }, [accounts, contract, contractOwner, jsonCid, videoCid]);
 
   return (
     <>
