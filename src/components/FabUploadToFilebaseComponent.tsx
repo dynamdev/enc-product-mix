@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 import {
-  UploadFileToFilebaseModalComponent,
+  ModalUploadFileToFilebaseComponent,
   UploadFileToFilebaseModalComponentElement,
-} from '@/components/UploadFileToFilebaseModalComponent';
+} from '@/components/ModalUploadFileToFilebaseComponent';
 import { ReactNotifications } from 'react-notifications-component';
 
-export const UploadToFilebaseFabComponent = () => {
+export const FabUploadToFilebaseComponent = () => {
   const refModal = useRef<UploadFileToFilebaseModalComponentElement | null>(
     null,
   );
@@ -37,7 +37,7 @@ export const UploadToFilebaseFabComponent = () => {
           ></path>
         </svg>
       </div>
-      <UploadFileToFilebaseModalComponent ref={refModal} />
+      <ModalUploadFileToFilebaseComponent ref={refModal} />
     </>
   );
 };

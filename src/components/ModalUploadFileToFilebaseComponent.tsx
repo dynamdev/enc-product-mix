@@ -1,6 +1,7 @@
 import {
   ChangeEvent,
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -10,17 +11,22 @@ import { Store } from 'react-notifications-component';
 import axios from 'axios';
 import { useNft } from '@/hooks/useNft';
 import { convertVideoToGif } from '@/helper/videoHelper';
+import { useMetamask } from '@/hooks/useMetamask';
+import { useSmartContract } from '@/hooks/useSmartContract';
+import { showErrorToast } from '@/helper/toastHelper';
 
 export interface UploadFileToFilebaseModalComponentElement {
   toggleModal: () => void;
 }
 
 // eslint-disable-next-line react/display-name
-export const UploadFileToFilebaseModalComponent = forwardRef<
+export const ModalUploadFileToFilebaseComponent = forwardRef<
   UploadFileToFilebaseModalComponentElement,
   {}
 >(({}, ref) => {
   const { addNft } = useNft();
+  const { accounts } = useMetamask();
+  const { contractOwner } = useSmartContract();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
 
@@ -97,10 +103,27 @@ export const UploadFileToFilebaseModalComponent = forwardRef<
       });
   };
 
+  const toggleModal = useCallback(() => {
+    if (accounts.length === 0) {
+      showErrorToast('Please connect your Metamask');
+      return;
+    }
+
+    if (contractOwner === null) {
+      showErrorToast('Checking the owner of the contract!');
+      return;
+    }
+
+    if (accounts[0] !== contractOwner) {
+      showErrorToast('You are not the contract owner!');
+      return;
+    }
+
+    setIsModalOpen((prevState) => !prevState);
+  }, [accounts, contractOwner]);
+
   useImperativeHandle(ref, () => ({
-    toggleModal: () => {
-      setIsModalOpen((prevState) => !prevState);
-    },
+    toggleModal,
   }));
 
   return (

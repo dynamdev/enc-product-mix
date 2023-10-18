@@ -5,7 +5,7 @@ import {
   NftCardComponentProps,
 } from '@/components/NftCardComponent';
 import { HeaderComponent } from '@/components/HeaderComponent';
-import { UploadToFilebaseFabComponent } from '@/components/UploadToFilebaseFabComponent';
+import { FabUploadToFilebaseComponent } from '@/components/FabUploadToFilebaseComponent';
 import { useNft } from '@/hooks/useNft';
 import { ReactNotifications } from 'react-notifications-component';
 
@@ -42,7 +42,7 @@ export default function Home() {
             );
           })}
       </main>
-      <UploadToFilebaseFabComponent />
+      <FabUploadToFilebaseComponent />
     </>
   );
 }

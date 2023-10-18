@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Store } from 'react-notifications-component';
+import { useCallback, useEffect, useState } from 'react';
 import { useMetamask } from '@/hooks/useMetamask';
-import { ethers } from 'ethers';
-import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { BigNumber } from '@ethersproject/bignumber';
 import { useSmartContract } from '@/hooks/useSmartContract';
 import { getSmartContractCleanErrorMessage } from '@/helper/smartContractHelper';
+import { showErrorToast, showSuccessToast } from '@/helper/toastHelper';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -70,39 +68,17 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
     setLoadingMessage('Minting...');
 
     contract
-      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid, {
-        gasLimit: BigNumber.from(250000).toHexString(),
-      })
+      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
       .then((response) => {
         setMintDate(new Date());
-        Store.addNotification({
-          type: 'success',
-          message: 'Successfully mint!',
-          container: 'top-right',
-          onRemoval: () => {
-            window.open(
-              process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL + response.hash,
-            );
-          },
-          dismiss: {
-            duration: 3000,
-            onScreen: true,
-            showIcon: true,
-          },
+        showSuccessToast('Successfully mint!', () => {
+          window.open(
+            process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL + response.hash,
+          );
         });
       })
       .catch((error) => {
-        console.log(error);
-        Store.addNotification({
-          type: 'danger',
-          message: getSmartContractCleanErrorMessage(error),
-          container: 'top-right',
-          dismiss: {
-            duration: 3000,
-            onScreen: true,
-            showIcon: true,
-          },
-        });
+        showErrorToast(getSmartContractCleanErrorMessage(error));
       })
       .finally(() => {
         setIsLoading(false);
