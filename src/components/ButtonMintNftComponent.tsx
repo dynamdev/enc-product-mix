@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Store } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
-import { ethers } from 'ethers';
+import { ethers, hexlify, bi } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
+import { BigNumber } from '@ethersproject/bignumber';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -73,7 +74,9 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
     setLoadingMessage('Minting...');
 
     nftContract
-      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
+      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid, {
+        gasLimit: BigNumber.from(250000).toHexString(),
+      })
       .then((response) => {
         setMintDate(new Date());
         Store.addNotification({
