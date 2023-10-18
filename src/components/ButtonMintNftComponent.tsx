@@ -84,7 +84,9 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
           message: 'Successfully mint!',
           container: 'top-right',
           onRemoval: () => {
-            window.open('https://etherscan.io/tx/' + response.hash);
+            window.open(
+              process.env.NEXT_PUBLIC_TRANSACTION_SCAN_URL + response.hash,
+            );
           },
           dismiss: {
             duration: 3000,
