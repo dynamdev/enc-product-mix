@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useMetamask } from '@/hooks/useMetamask';
-import { BigNumber } from '@ethersproject/bignumber';
 import { useSmartContract } from '@/hooks/useSmartContract';
 import { getSmartContractCleanErrorMessage } from '@/helper/smartContractHelper';
-import { showErrorToast, showSuccessToast } from '@/helper/toastHelper';
+import { showErrorToast } from '@/helper/toastHelper';
+import axios from 'axios';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -69,18 +69,35 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
 
     contract
       .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
-      .then((response) => {
-        setMintDate(new Date());
-        showSuccessToast('Successfully mint!', () => {
-          window.open(
-            process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL + response.hash,
-          );
-        });
+      .then((contractResponse) => {
+        setIsLoading(true);
+        setLoadingMessage('Minting...');
+
+        axios
+          .get('/api/blockchain/check?txhash=' + contractResponse.hash)
+          .then((axiosResponse) => {
+            const result = axiosResponse.data.success as boolean;
+
+            if (!result) {
+              setIsLoading(false);
+              showErrorToast('Minting failed!');
+              return;
+            }
+
+            window.open(
+              process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL +
+                contractResponse.hash,
+            );
+            setMintDate(new Date());
+            setIsLoading(false);
+          })
+          .catch((error) => {
+            showErrorToast(error.message);
+            setIsLoading(false);
+          });
       })
       .catch((error) => {
         showErrorToast(getSmartContractCleanErrorMessage(error));
-      })
-      .finally(() => {
         setIsLoading(false);
       });
   }, [accounts, contract, contractOwner, jsonCid, videoCid]);
