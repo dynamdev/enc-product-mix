@@ -32,7 +32,32 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
         </figure>
         <div className="card-body p-4">
           <h2 className="card-title">{title}</h2>
+
           <p>{description}</p>
+          <sub className={'mx-auto pb-2 flex gap-2'}>
+            <span>
+              [
+              <a
+                href={'https://ipfs.filebase.io/ipfs/' + thumbnailCid}
+                target={'_blank'}
+                className={'link'}
+              >
+                Thumbnail
+              </a>
+              ]
+            </span>
+            <span>
+              [
+              <a
+                href={'https://ipfs.filebase.io/ipfs/' + videoCid}
+                target={'_blank'}
+                className={'link'}
+              >
+                Video
+              </a>
+              ]
+            </span>
+          </sub>
           <div className="card-actions">
             <ButtonMintNftComponent jsonCid={jsonCid} videoCid={videoCid} />
           </div>

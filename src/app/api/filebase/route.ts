@@ -7,6 +7,7 @@ export async function GET() {
     status: ['pinned'],
     name: 'json/',
     match: 'partial',
+    limit: 100,
   });
 
   return NextResponse.json({ metadata: metadataIpfsData });
