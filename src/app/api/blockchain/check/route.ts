@@ -16,14 +16,15 @@ interface GetTokenResponse {
   message: string;
   result: {
     tokenID: number;
-  };
+    hash: string;
+  }[];
 }
+
+// Helper function to pause execution for a set period of time
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 const checkTxHashStatus = async (txHash: string) => {
   const url = `${process.env.BLOCKCHAIN_EXPLORER_API_URL}?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${process.env.BLOCKCHAIN_EXPLORER_API_KEY}`;
-
-  // Helper function to pause execution for a set period of time
-  const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
   // Keep checking the transaction status until it's no longer pending
   while (true) {
@@ -45,7 +46,7 @@ const checkTxHashStatus = async (txHash: string) => {
   }
 };
 
-const getNftToken = async (account: string) => {
+const getNftToken = async (account: string, txHash: string) => {
   const url =
     `${process.env.BLOCKCHAIN_EXPLORER_API_URL}` +
     `?module=account` +
@@ -59,13 +60,19 @@ const getNftToken = async (account: string) => {
     `&sort=desc` +
     `&apikey=${process.env.BLOCKCHAIN_EXPLORER_API_KEY}`;
 
-  try {
-    const response = await axios.get(url);
-    const data = response.data as GetTokenResponse;
+  while (true) {
+    try {
+      const response = await axios.get(url);
+      const data = response.data as GetTokenResponse;
 
-    return data.result.tokenID;
-  } catch (error) {
-    throw error;
+      if (data.result[0].hash === txHash) {
+        return data.result[0].tokenID;
+      }
+
+      await delay(500);
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
@@ -82,7 +89,7 @@ export async function GET(request: Request) {
     if (await checkTxHashStatus(txHash)) {
       return NextResponse.json({
         success: true,
-        token: await getNftToken(account),
+        token: await getNftToken(account, txHash),
       });
     } else {
       return NextResponse.json({
