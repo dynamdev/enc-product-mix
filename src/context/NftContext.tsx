@@ -34,11 +34,14 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       name: string;
       description: string;
       animation_url: string;
+      image: string;
     } = response.data;
+
     return {
       description: data.description,
       title: data.name,
       videoCid: data.animation_url.split('/').pop()!,
+      thumbnailCid: data.image.split('/').pop()!,
       jsonCid: jsonCid,
     };
   };

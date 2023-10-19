@@ -8,12 +8,13 @@ import { ButtonMintNftComponent } from '@/components/ButtonMintNftComponent';
 export interface NftCardComponentProps {
   jsonCid: string;
   videoCid: string;
+  thumbnailCid: string;
   title: string;
   description: string;
 }
 
 export const NftCardComponent = (props: NftCardComponentProps) => {
-  const { jsonCid, videoCid, title, description } = props;
+  const { jsonCid, thumbnailCid, videoCid, title, description } = props;
 
   return (
     <>
@@ -23,12 +24,10 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
             'aspect-video bg-black w-full rounded-t-lg text-center flex flex-col justify-center'
           }
         >
-          <video
-            className="aspect-video w-full"
-            autoPlay={true}
-            loop={true}
-            muted={true}
-            src={'https://ipfs.filebase.io/ipfs/' + videoCid}
+          <img
+            className="h-full"
+            src={'https://ipfs.filebase.io/ipfs/' + thumbnailCid}
+            alt={thumbnailCid}
           />
         </figure>
         <div className="card-body p-4">
