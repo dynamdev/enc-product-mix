@@ -74,20 +74,38 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         setLoadingMessage('Minting...');
 
         axios
-          .get('/api/blockchain/check?txhash=' + contractResponse.hash)
+          .get(
+            '/api/blockchain/check?txhash=' +
+              contractResponse.hash +
+              '&account=' +
+              accounts[0],
+          )
           .then((axiosResponse) => {
-            const result = axiosResponse.data.success as boolean;
+            const result = axiosResponse.data as {
+              success: boolean;
+              token: number;
+            };
 
-            if (!result) {
+            if (!result.success) {
               setIsLoading(false);
               showErrorToast('Minting failed!');
               return;
             }
 
+            //open transaction in blockchain explorer
             window.open(
               process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL +
                 contractResponse.hash,
             );
+
+            //open link opensea
+            window.open(
+              process.env.NEXT_PUBLIC_OPENSEA_BASE_URL! +
+                process.env.NEXT_PUBLIC_CONTRACT_ADDRESS! +
+                '/' +
+                result.token,
+            );
+
             setMintDate(new Date());
             setIsLoading(false);
           })
