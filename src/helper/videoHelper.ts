@@ -14,7 +14,7 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
   const fps = 30;
   const scale = 300;
 
-  await ffmpeg.writeFile('video1.mp4', await fetchFile(video));
+  await ffmpeg.writeFile('video.mp4', await fetchFile(video));
 
   // Generate a palette for better color accuracy
   await ffmpeg.exec([
