@@ -55,9 +55,8 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       const promises = data.map((datum) => loadMetadata(datum.pin.cid));
 
       Promise.all(promises).then((results) => {
-        results.sort((a, b) => {
-          return a.title.localeCompare(b.title);
-        });
+        results.reverse();
+
         setNfts((prev) => [...prev, ...results]);
         setIsLoading(false);
       });
