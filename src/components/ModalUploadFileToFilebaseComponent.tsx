@@ -85,21 +85,21 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     setButtonUploadIpfsText('Uploading to IPFS...');
 
     axios
-      .put('/api/filebase', formData)
+      .put('/api/crust-network', formData)
       .then((response) => {
-        addNft(response.data.jsonCid);
-        // toggleModel();
+        console.log(response.data.jsonCid);
+        //addNft(response.data.jsonCid);
       })
       .finally(() => {
-        setIsModalOpen(false);
+        // setIsModalOpen(false);
         setButtonUploadIpfsText('Upload to IPFS');
         setIsButtonUploadIpfsLoading(false);
 
-        setSelectedVideoUrl(null);
-        setSelectedVideo(null);
-        setFilename('');
-        setName('');
-        setDescription('');
+        // setSelectedVideoUrl(null);
+        // setSelectedVideo(null);
+        // setFilename('');
+        // setName('');
+        // setDescription('');
       });
   };
 
