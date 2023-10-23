@@ -11,9 +11,10 @@ import {
 import { NftCardComponentProps } from '@/components/NftCardComponent';
 import axios from 'axios';
 import { GetPinnedObjectsResponse } from '@/helper/filebaseHelper';
+import { useSmartContract } from '@/hooks/useSmartContract';
+import { Contract } from 'ethers';
 
 export const NftContext = createContext<{
-  isLoading: boolean;
   nfts: NftCardComponentProps[];
   reloadNfts: () => void;
   addNft: (jsonCid: string) => void;
@@ -22,14 +23,14 @@ export const NftContext = createContext<{
 export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const { contract } = useSmartContract();
+
   const [nfts, setNfts] = useState<NftCardComponentProps[]>([]);
 
   const loadMetadata = async (
-    jsonCid: string,
+    tokenUri: string,
   ): Promise<NftCardComponentProps> => {
-    const baseUrl = 'https://ipfs.filebase.io/ipfs/';
-    const response = await axios.get(baseUrl + jsonCid);
+    const response = await axios.get(tokenUri);
     const data: {
       name: string;
       description: string;
@@ -42,31 +43,30 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       title: data.name,
       videoCid: data.animation_url.split('/').pop()!,
       thumbnailCid: data.image.split('/').pop()!,
-      jsonCid: jsonCid,
+      jsonCid: tokenUri.split('/').pop()!,
     };
   };
 
-  const reloadNfts = useCallback(() => {
-    setIsLoading(true);
+  const reloadNfts = useCallback(async () => {
+    if (contract === null) return;
+
     setNfts([]);
 
-    axios.get('/api/filebase').then((response) => {
-      const data: GetPinnedObjectsResponse[] = response.data.metadata;
-      const promises = data.map((datum) => loadMetadata(datum.pin.cid));
+    const totalSupply = await contract.totalSupply();
+    const totalSupplyNumber = parseInt(totalSupply.toString());
 
-      Promise.all(promises).then((results) => {
-        results.reverse();
+    for (let x = 1; x < totalSupplyNumber; x++) {
+      const tokenUri = await contract.tokenURI(x);
+      const data = await loadMetadata(tokenUri);
 
-        setNfts((prev) => [...prev, ...results]);
-        setIsLoading(false);
-      });
-    });
-  }, []);
+      setNfts((prev) => [...prev, data]);
+    }
+  }, [contract]);
 
   const addNft = useCallback((jsonCid: string) => {
-    loadMetadata(jsonCid).then((results) => {
-      setNfts((prev) => [...prev, results]);
-    });
+    // loadMetadata(jsonCid).then((results) => {
+    //   setNfts((prev) => [...prev, results]);
+    // });
   }, []);
 
   useEffect(() => {
@@ -76,7 +76,6 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   return (
     <NftContext.Provider
       value={{
-        isLoading,
         nfts,
         reloadNfts,
         addNft,
