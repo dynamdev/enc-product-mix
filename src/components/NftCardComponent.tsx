@@ -19,7 +19,7 @@ export const NftCardComponent = (props: INft) => {
         >
           <img
             className="h-full"
-            src={'https://ipfs.io/ipfs/' + thumbnailCid}
+            src={process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + thumbnailCid}
             alt={thumbnailCid}
           />
         </figure>
@@ -28,10 +28,11 @@ export const NftCardComponent = (props: INft) => {
 
           <p>{description}</p>
           <sub className={'mx-auto pb-2 flex gap-2'}>
+            <span>IPFS: </span>
             <span>
               [
               <a
-                href={'https://ipfs.io/ipfs/' + jsonCid}
+                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + jsonCid}
                 target={'_blank'}
                 className={'link'}
               >
@@ -42,7 +43,7 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={'https://ipfs.io/ipfs/' + thumbnailCid}
+                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + thumbnailCid}
                 target={'_blank'}
                 className={'link'}
               >
@@ -53,7 +54,45 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={'https://ipfs.io/ipfs/' + videoCid}
+                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + videoCid}
+                target={'_blank'}
+                className={'link'}
+              >
+                Video
+              </a>
+              ]
+            </span>
+          </sub>
+          <sub className={'mx-auto pb-2 flex gap-2'}>
+            <span>Gateway: </span>
+            <span>
+              [
+              <a
+                href={process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + jsonCid}
+                target={'_blank'}
+                className={'link'}
+              >
+                Metadata
+              </a>
+              ]
+            </span>
+            <span>
+              [
+              <a
+                href={
+                  process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + thumbnailCid
+                }
+                target={'_blank'}
+                className={'link'}
+              >
+                Thumbnail
+              </a>
+              ]
+            </span>
+            <span>
+              [
+              <a
+                href={process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + videoCid}
                 target={'_blank'}
                 className={'link'}
               >

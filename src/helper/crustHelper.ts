@@ -4,7 +4,7 @@ import { typesBundleForPolkadot } from '@crustio/type-definitions';
 import { Keyring } from '@polkadot/keyring';
 import { IIpfs } from '@/interfaces/IIpfs';
 
-const pinToCrustNetwork = async (cid: string, fileSize: number) => {
+export const pinToCrustNetwork = async (cid: string, fileSize: number) => {
   const crustChainEndpoint = 'wss://rpc.crust.network';
   const api = new ApiPromise({
     provider: new WsProvider(crustChainEndpoint),
@@ -17,7 +17,7 @@ const pinToCrustNetwork = async (cid: string, fileSize: number) => {
   const kr = new Keyring({ type: 'sr25519' });
   const krp = kr.addFromUri(seeds);
 
-  const tx = api.tx.market.placeStorageOrder(cid, fileSize, 0, '');
+  const tx = api.tx.market.placeStorageOrder(cid, fileSize, 10, '');
 
   return new Promise((resolve, reject) => {
     tx.signAndSend(krp, ({ events = [], status }) => {
@@ -34,7 +34,7 @@ const pinToCrustNetwork = async (cid: string, fileSize: number) => {
   });
 };
 
-const addPrepaidToCrustNetwork = async (cid: string, amount: number) => {
+export const addPrepaidToCrustNetwork = async (cid: string, amount: number) => {
   const crustChainEndpoint = 'wss://rpc.crust.network';
   const api = new ApiPromise({
     provider: new WsProvider(crustChainEndpoint),

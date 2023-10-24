@@ -2,7 +2,6 @@ import {
   ChangeEvent,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -55,6 +54,46 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     }
   };
 
+  const uploadAndPinToCrust = async (
+    fileTypeInfo: string,
+    filename: string,
+    fileData: string | File,
+  ): Promise<null | IIpfs> => {
+    let ipfsData: IIpfs;
+
+    try {
+      setButtonUploadIpfsText('Uploading ' + fileTypeInfo + ' to IPFS...');
+
+      const formData = new FormData();
+      formData.append('filename', filename);
+      formData.append('fileData', fileData);
+
+      ipfsData = (await axios.put('/api/crust-network/upload', formData)).data;
+    } catch (_) {
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      showErrorToast('Fail to upload ' + fileTypeInfo + '!');
+      return null;
+    }
+
+    try {
+      setButtonUploadIpfsText('Pinning ' + fileTypeInfo + ' to IPFS...');
+
+      const formData = new FormData();
+      formData.append('cid', ipfsData.Hash);
+      formData.append('fileSize', ipfsData.Size);
+
+      await axios.post('/api/crust-network/pin', formData);
+    } catch (_) {
+      setButtonUploadIpfsText('Pinning to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      showErrorToast('Fail to pin ' + fileTypeInfo + '!');
+      return null;
+    }
+
+    return ipfsData;
+  };
+
   const onUploadToIpfs = async () => {
     if (refFrom.current === null) return;
 
@@ -81,68 +120,37 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     const filenameThumbnail = filename + '.gif';
     const filenameJson = filename + '.json';
 
-    let videoResponse: IIpfs;
-    try {
-      setButtonUploadIpfsText('Uploading to video to IPFS...');
+    const videoResponse = await uploadAndPinToCrust(
+      'video',
+      filenameVideo,
+      selectedVideo!,
+    );
+    if (videoResponse === null) return;
 
-      const videoFormData = new FormData();
-      videoFormData.append('filename', filenameVideo);
-      videoFormData.append('fileData', selectedVideo!);
+    let thumbnailResponse = await uploadAndPinToCrust(
+      'thumbnail',
+      filenameThumbnail,
+      gif,
+    );
+    if (thumbnailResponse === null) return;
 
-      videoResponse = (
-        await axios.put('/api/crust-network/upload', videoFormData)
-      ).data;
-    } catch (_) {
-      setButtonUploadIpfsText('Upload to IPFS');
-      setIsButtonUploadIpfsLoading(false);
-      showErrorToast('Fail to upload video!');
-      return;
-    }
+    const jsonContent = JSON.stringify({
+      name: name,
+      description: description,
+      image:
+        process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + thumbnailResponse.Hash,
+      animation_url:
+        process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + videoResponse.Hash,
+    });
 
-    let thumbnailResponse: IIpfs;
-    try {
-      setButtonUploadIpfsText('Uploading to thumbnail to IPFS...');
+    let jsonResponse = await uploadAndPinToCrust(
+      'metadata',
+      filenameJson,
+      jsonContent,
+    );
+    if (jsonResponse === null) return;
 
-      const thumbnailFormData = new FormData();
-      thumbnailFormData.append('filename', filenameThumbnail);
-      thumbnailFormData.append('fileData', gif);
-
-      thumbnailResponse = (
-        await axios.put('/api/crust-network/upload', thumbnailFormData)
-      ).data;
-    } catch (_) {
-      setButtonUploadIpfsText('Upload to IPFS');
-      setIsButtonUploadIpfsLoading(false);
-      showErrorToast('Fail to upload thumbnail!');
-      return;
-    }
-
-    let jsonResponse: IIpfs;
-    try {
-      setButtonUploadIpfsText('Uploading to metadata to IPFS...');
-
-      const jsonContent = JSON.stringify({
-        name: name,
-        description: description,
-        image: 'https://ipfs.io/ipfs/' + thumbnailResponse.Hash,
-        animation_url: 'https://ipfs.io/ipfs/' + videoResponse.Hash,
-      });
-
-      const jsonFormData = new FormData();
-      jsonFormData.append('filename', filenameJson);
-      jsonFormData.append('fileData', jsonContent);
-
-      jsonResponse = (
-        await axios.put('/api/crust-network/upload', jsonFormData)
-      ).data;
-    } catch (_) {
-      setButtonUploadIpfsText('Upload to IPFS');
-      setIsButtonUploadIpfsLoading(false);
-      showErrorToast('Fail to upload metadata!');
-      return;
-    }
-
-    addNft('https://ipfs.io/ipfs/' + jsonResponse.Hash);
+    addNft(process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + jsonResponse.Hash);
 
     setButtonUploadIpfsText('Upload to IPFS');
     setIsButtonUploadIpfsLoading(false);

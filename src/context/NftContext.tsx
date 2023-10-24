@@ -57,6 +57,9 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     tokenId: number,
     tokenUri: string,
   ): Promise<INft> => {
+    const gatewayTokenUri =
+      process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL +
+      tokenUri.replace(process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL!, '');
     const response = await axios.get(tokenUri);
     const data: {
       name: string;
