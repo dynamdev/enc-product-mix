@@ -11,7 +11,7 @@ import { ReactNotifications } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
 
 export default function Home() {
-  const { nfts } = useNft();
+  const { nfts, isLoading } = useNft();
   const { accounts } = useMetamask();
 
   return (
@@ -19,23 +19,25 @@ export default function Home() {
       <ReactNotifications />
       <HeaderComponent />
       <main className="flex flex-wrap justify-center gap-4 p-4">
-        {/*{isLoading && (*/}
-        {/*  <>*/}
-        {/*    <span className="loading loading-dots loading-lg h-96"></span>*/}
-        {/*  </>*/}
-        {/*)}*/}
+        {isLoading && (
+          <>
+            <span className="loading loading-dots loading-lg h-96"></span>
+          </>
+        )}
 
-        {nfts.length === 0 && accounts.length === 0 && (
+        {!isLoading && nfts.length === 0 && accounts.length === 0 && (
           <div className={'h-96 flex flex-col justify-center text-lg'}>
             Please connect your metamask
           </div>
         )}
 
-        {nfts.length !== 0 &&
+        {!isLoading &&
+          nfts.length !== 0 &&
           nfts.map((nft, index) => {
             return (
               <NftCardComponent
                 key={'nft_' + index}
+                tokenId={nft.tokenId}
                 videoCid={nft.videoCid}
                 jsonCid={nft.jsonCid}
                 title={nft.title}

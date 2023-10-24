@@ -4,16 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { ButtonMintNftComponent } from '@/components/ButtonMintNftComponent';
+import { INft } from '@/interfaces/INft';
 
-export interface NftCardComponentProps {
-  jsonCid: string;
-  videoCid: string;
-  thumbnailCid: string;
-  title: string;
-  description: string;
-}
-
-export const NftCardComponent = (props: NftCardComponentProps) => {
+export const NftCardComponent = (props: INft) => {
   const { jsonCid, thumbnailCid, videoCid, title, description } = props;
 
   return (
@@ -35,6 +28,17 @@ export const NftCardComponent = (props: NftCardComponentProps) => {
 
           <p>{description}</p>
           <sub className={'mx-auto pb-2 flex gap-2'}>
+            <span>
+              [
+              <a
+                href={'https://ipfs.filebase.io/ipfs/' + jsonCid}
+                target={'_blank'}
+                className={'link'}
+              >
+                Metadata
+              </a>
+              ]
+            </span>
             <span>
               [
               <a

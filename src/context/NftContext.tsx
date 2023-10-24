@@ -16,7 +16,8 @@ import { Contract } from 'ethers';
 import { INft } from '@/interfaces/INft';
 
 export const NftContext = createContext<{
-  nfts: NftCardComponentProps[];
+  nfts: INft[];
+  isLoading: boolean;
 } | null>(null);
 
 export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
@@ -77,6 +78,8 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   };
 
   const initializeNfts = useCallback(async () => {
+    setIsLoading(true);
+
     //load local and contract metadata uri
     let localMetadataUris = getLocalMetadataUris();
     const contractMetadataUris = await getContractMetadataUris();
@@ -104,13 +107,13 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     ];
 
     //load metadata and set nfts state
+    const nfts: INft[] = [];
     for (const metadataUri of metadataUris) {
-      loadMetadata(metadataUri.tokenId, metadataUri.uri).then((result) => {
-        setNfts((prevState) =>
-          [...prevState, result].sort((a, b) => a.tokenId - b.tokenId),
-        );
-      });
+      nfts.push(await loadMetadata(metadataUri.tokenId, metadataUri.uri));
     }
+
+    setNfts(nfts);
+    setIsLoading(false);
   }, [getContractMetadataUris]);
 
   useEffect(() => {
@@ -121,6 +124,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     <NftContext.Provider
       value={{
         nfts,
+        isLoading,
       }}
     >
       {children}
