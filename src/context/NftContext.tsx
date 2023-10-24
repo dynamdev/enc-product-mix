@@ -16,8 +16,6 @@ import { Contract } from 'ethers';
 
 export const NftContext = createContext<{
   nfts: NftCardComponentProps[];
-  reloadNfts: () => void;
-  addNft: (jsonCid: string) => void;
 } | null>(null);
 
 export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
@@ -26,6 +24,34 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   const { contract } = useSmartContract();
 
   const [nfts, setNfts] = useState<NftCardComponentProps[]>([]);
+  const [localNftMetadataUris, setLocalNftMetadataUris] = useState<string[]>(
+    [],
+  );
+  const [contractNftMetadataUris, setContractNftMetadataUris] = useState<
+    string[]
+  >([]);
+
+  const getLocalMetadataUris = (): string[] => {
+    const localMetadataUrisJson = localStorage.getItem('localMetadataUris');
+    return localMetadataUrisJson === null
+      ? []
+      : JSON.parse(localMetadataUrisJson);
+  };
+
+  const getContractMetadataUris = useCallback(async (): Promise<string[]> => {
+    if (contract === null) return [];
+
+    const totalSupply = await contract.totalSupply();
+    const totalSupplyNumber = parseInt(totalSupply.toString());
+
+    const contractMetadataUris = [];
+
+    for (let x = 1; x < totalSupplyNumber; x++) {
+      contractMetadataUris.push(await contract.tokenURI(x));
+    }
+
+    return contractMetadataUris;
+  }, [contract]);
 
   const loadMetadata = async (
     tokenUri: string,
@@ -47,38 +73,35 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     };
   };
 
-  const reloadNfts = useCallback(async () => {
-    if (contract === null) return;
+  const initializeNfts = useCallback(async () => {
+    //load local and contract metadata uri
+    let localMetadataUris = getLocalMetadataUris();
+    const contractMetadataUris = await getContractMetadataUris();
 
-    setNfts([]);
+    //remove existing local metadata if found in contract uri
+    localMetadataUris = localMetadataUris.filter(
+      (uri) => !contractMetadataUris.includes(uri),
+    );
 
-    const totalSupply = await contract.totalSupply();
-    const totalSupplyNumber = parseInt(totalSupply.toString());
+    //merge local and contract metadata uri
+    const metadataUris = [...localMetadataUris, ...contractMetadataUris];
 
-    for (let x = 1; x < totalSupplyNumber; x++) {
-      const tokenUri = await contract.tokenURI(x);
-      const data = await loadMetadata(tokenUri);
-
-      setNfts((prev) => [...prev, data]);
+    //load metadata and set nfts state
+    for (const metadataUri of metadataUris) {
+      loadMetadata(metadataUri).then((result) => {
+        setNfts((prevState) => [...prevState, result]);
+      });
     }
-  }, [contract]);
-
-  const addNft = useCallback((jsonCid: string) => {
-    // loadMetadata(jsonCid).then((results) => {
-    //   setNfts((prev) => [...prev, results]);
-    // });
-  }, []);
+  }, [getContractMetadataUris]);
 
   useEffect(() => {
-    reloadNfts();
-  }, [reloadNfts]);
+    initializeNfts().then();
+  }, [initializeNfts]);
 
   return (
     <NftContext.Provider
       value={{
         nfts,
-        reloadNfts,
-        addNft,
       }}
     >
       {children}
