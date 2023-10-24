@@ -14,6 +14,8 @@ import { convertVideoToGif } from '@/helper/videoHelper';
 import { useMetamask } from '@/hooks/useMetamask';
 import { useSmartContract } from '@/hooks/useSmartContract';
 import { showErrorToast } from '@/helper/toastHelper';
+import { IIpfs } from '@/interfaces/IIpfs';
+import { removeExtension } from '@/helper/fileHelper';
 
 export interface UploadFileToFilebaseModalComponentElement {
   toggleModal: () => void;
@@ -49,7 +51,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       const objectURL = URL.createObjectURL(file);
       setSelectedVideoUrl(objectURL);
       setSelectedVideo(file);
-      setFilename(file.name);
+      setFilename(removeExtension(file.name));
     }
   };
 
@@ -72,35 +74,84 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     }
 
     setIsButtonUploadIpfsLoading(true);
-
     setButtonUploadIpfsText('Generating Gif from Video...');
 
-    const formData = new FormData();
-    formData.append('video', selectedVideo!);
-    formData.append('gif', await convertVideoToGif(selectedVideo!));
-    formData.append('filename', filename);
-    formData.append('name', name);
-    formData.append('description', description);
+    const gif = await convertVideoToGif(selectedVideo!);
+    const filenameVideo = filename + '.mp4';
+    const filenameThumbnail = filename + '.gif';
+    const filenameJson = filename + '.json';
 
-    setButtonUploadIpfsText('Uploading to IPFS...');
+    let videoResponse: IIpfs;
+    try {
+      setButtonUploadIpfsText('Uploading to video to IPFS...');
 
-    axios
-      .put('/api/crust-network', formData)
-      .then((response) => {
-        console.log(response.data.jsonCid);
-        //addNft(response.data.jsonCid);
-      })
-      .finally(() => {
-        // setIsModalOpen(false);
-        setButtonUploadIpfsText('Upload to IPFS');
-        setIsButtonUploadIpfsLoading(false);
+      const videoFormData = new FormData();
+      videoFormData.append('filename', filenameVideo);
+      videoFormData.append('fileData', selectedVideo!);
 
-        // setSelectedVideoUrl(null);
-        // setSelectedVideo(null);
-        // setFilename('');
-        // setName('');
-        // setDescription('');
+      videoResponse = (
+        await axios.put('/api/crust-network/upload', videoFormData)
+      ).data;
+    } catch (_) {
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      showErrorToast('Fail to upload video!');
+      return;
+    }
+
+    let thumbnailResponse: IIpfs;
+    try {
+      setButtonUploadIpfsText('Uploading to thumbnail to IPFS...');
+
+      const thumbnailFormData = new FormData();
+      thumbnailFormData.append('filename', filenameThumbnail);
+      thumbnailFormData.append('fileData', gif);
+
+      thumbnailResponse = (
+        await axios.put('/api/crust-network/upload', thumbnailFormData)
+      ).data;
+    } catch (_) {
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      showErrorToast('Fail to upload thumbnail!');
+      return;
+    }
+
+    let jsonResponse: IIpfs;
+    try {
+      setButtonUploadIpfsText('Uploading to metadata to IPFS...');
+
+      const jsonContent = JSON.stringify({
+        name: name,
+        description: description,
+        image: 'https://ipfs.io/ipfs/' + thumbnailResponse.Hash,
+        animation_url: 'https://ipfs.io/ipfs/' + videoResponse.Hash,
       });
+
+      const jsonFormData = new FormData();
+      jsonFormData.append('filename', filenameJson);
+      jsonFormData.append('fileData', jsonContent);
+
+      jsonResponse = (
+        await axios.put('/api/crust-network/upload', jsonFormData)
+      ).data;
+    } catch (_) {
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      showErrorToast('Fail to upload metadata!');
+      return;
+    }
+
+    addNft('https://ipfs.io/ipfs/' + jsonResponse.Hash);
+
+    setButtonUploadIpfsText('Upload to IPFS');
+    setIsButtonUploadIpfsLoading(false);
+    setSelectedVideoUrl(null);
+    setSelectedVideo(null);
+    setFilename('');
+    setName('');
+    setDescription('');
+    setIsModalOpen(false);
   };
 
   const toggleModal = useCallback(() => {

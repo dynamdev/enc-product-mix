@@ -19,7 +19,7 @@ export const NftCardComponent = (props: INft) => {
         >
           <img
             className="h-full"
-            src={'https://ipfs.filebase.io/ipfs/' + thumbnailCid}
+            src={'https://ipfs.io/ipfs/' + thumbnailCid}
             alt={thumbnailCid}
           />
         </figure>
@@ -31,7 +31,7 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={'https://ipfs.filebase.io/ipfs/' + jsonCid}
+                href={'https://ipfs.io/ipfs/' + jsonCid}
                 target={'_blank'}
                 className={'link'}
               >
@@ -42,7 +42,7 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={'https://ipfs.filebase.io/ipfs/' + thumbnailCid}
+                href={'https://ipfs.io/ipfs/' + thumbnailCid}
                 target={'_blank'}
                 className={'link'}
               >
@@ -53,7 +53,7 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={'https://ipfs.filebase.io/ipfs/' + videoCid}
+                href={'https://ipfs.io/ipfs/' + videoCid}
                 target={'_blank'}
                 className={'link'}
               >

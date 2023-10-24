@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { typesBundleForPolkadot } from '@crustio/type-definitions';
 import { Keyring } from '@polkadot/keyring';
+import { IIpfs } from '@/interfaces/IIpfs';
 
 const pinToCrustNetwork = async (cid: string, fileSize: number) => {
   const crustChainEndpoint = 'wss://rpc.crust.network';
@@ -19,14 +20,10 @@ const pinToCrustNetwork = async (cid: string, fileSize: number) => {
   const tx = api.tx.market.placeStorageOrder(cid, fileSize, 0, '');
 
   return new Promise((resolve, reject) => {
-    console.log(`💸  Tx Pinning CID`);
     tx.signAndSend(krp, ({ events = [], status }) => {
-      console.log(`💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
-
       if (status.isInBlock) {
         events.forEach(({ event: { method, section } }) => {
           if (method === 'ExtrinsicSuccess') {
-            console.log(`✅  Place storage order success!`);
             resolve(true);
           }
         });
@@ -52,20 +49,14 @@ const addPrepaidToCrustNetwork = async (cid: string, amount: number) => {
 
   const tx = api.tx.market.addPrepaid(cid, amount);
 
-  console.log(`💸  Tx Adding Long Term Plan`);
   return new Promise((resolve, reject) => {
     tx.signAndSend(krp, ({ events = [], status }) => {
-      console.log(`💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
-
       if (status.isInBlock) {
         events.forEach(({ event: { method, section } }) => {
           if (method === 'ExtrinsicSuccess') {
-            console.log(`✅  Add prepaid success!`);
             resolve(true);
           }
         });
-      } else {
-        // Pass it
       }
     }).catch((e) => {
       reject(e);
@@ -103,7 +94,7 @@ export const uploadToCrustIpfs = async (
 
   try {
     const response = await axios.post(
-      'https://gw.crustfiles.net/api/v0/add?pin=true',
+      'https://crustipfs.xyz/api/v0/add?pin=true',
       formData,
       {
         headers: {
@@ -112,12 +103,8 @@ export const uploadToCrustIpfs = async (
       },
     );
 
-    return response.data as {
-      Name: string;
-      Hash: string;
-      Size: string;
-    };
+    return response.data as IIpfs;
   } catch (e) {
-    return null;
+    throw e;
   }
 };

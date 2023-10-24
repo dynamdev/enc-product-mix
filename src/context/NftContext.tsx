@@ -14,6 +14,7 @@ import { INft } from '@/interfaces/INft';
 
 export const NftContext = createContext<{
   nfts: INft[];
+  addNft: (metadataUri: string) => void;
   isLoading: boolean;
 } | null>(null);
 
@@ -113,6 +114,20 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     setIsLoading(false);
   }, [getContractMetadataUris]);
 
+  const addNft = async (metadataUri: string) => {
+    //update local storage for new metadata
+    const localMetadataUris = getLocalMetadataUris();
+    localMetadataUris.push(metadataUri);
+    localStorage.setItem(
+      'localMetadataUris',
+      JSON.stringify(localMetadataUris),
+    );
+
+    loadMetadata(-1, metadataUri).then((newNft) => {
+      setNfts((nfts) => [newNft, ...nfts]);
+    });
+  };
+
   useEffect(() => {
     initializeNfts().then();
   }, [initializeNfts]);
@@ -121,6 +136,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     <NftContext.Provider
       value={{
         nfts,
+        addNft,
         isLoading,
       }}
     >
