@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  NftCardComponent,
-  NftCardComponentProps,
-} from '@/components/NftCardComponent';
+import { NftCardComponent } from '@/components/NftCardComponent';
 import { HeaderComponent } from '@/components/HeaderComponent';
 import { FabUploadToFilebaseComponent } from '@/components/FabUploadToFilebaseComponent';
 import { useNft } from '@/hooks/useNft';

@@ -8,11 +8,8 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { NftCardComponentProps } from '@/components/NftCardComponent';
 import axios from 'axios';
-import { GetPinnedObjectsResponse } from '@/helper/filebaseHelper';
 import { useSmartContract } from '@/hooks/useSmartContract';
-import { Contract } from 'ethers';
 import { INft } from '@/interfaces/INft';
 
 export const NftContext = createContext<{
