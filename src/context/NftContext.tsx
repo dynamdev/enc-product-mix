@@ -56,26 +56,36 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   const loadMetadata = async (
     tokenId: number,
     tokenUri: string,
-  ): Promise<INft> => {
-    const gatewayTokenUri =
-      process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL +
-      tokenUri.replace(process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL!, '');
-    const response = await axios.get(tokenUri);
-    const data: {
-      name: string;
-      description: string;
-      animation_url: string;
-      image: string;
-    } = response.data;
+  ): Promise<INft | null> => {
+    let gatewayTokenUri = tokenUri.replace(
+      process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL!,
+      '',
+    );
+    if (gatewayTokenUri !== tokenUri) {
+      gatewayTokenUri =
+        process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + gatewayTokenUri;
+    }
 
-    return {
-      tokenId,
-      description: data.description,
-      title: data.name,
-      videoCid: data.animation_url.split('/').pop()!,
-      thumbnailCid: data.image.split('/').pop()!,
-      jsonCid: tokenUri.split('/').pop()!,
-    };
+    try {
+      const response = await axios.get(gatewayTokenUri);
+      const data: {
+        name: string;
+        description: string;
+        animation_url: string;
+        image: string;
+      } = response.data;
+
+      return {
+        tokenId,
+        description: data.description,
+        title: data.name,
+        videoCid: data.animation_url.split('/').pop()!,
+        thumbnailCid: data.image.split('/').pop()!,
+        jsonCid: tokenUri.split('/').pop()!,
+      };
+    } catch (_) {
+      return null;
+    }
   };
 
   const initializeNfts = useCallback(async () => {
@@ -110,7 +120,11 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     //load metadata and set nfts state
     const nfts: INft[] = [];
     for (const metadataUri of metadataUris) {
-      nfts.push(await loadMetadata(metadataUri.tokenId, metadataUri.uri));
+      const newNftData = await loadMetadata(
+        metadataUri.tokenId,
+        metadataUri.uri,
+      );
+      if (newNftData !== null) nfts.push(newNftData);
     }
 
     setNfts(nfts);
@@ -127,6 +141,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     );
 
     loadMetadata(-1, metadataUri).then((newNft) => {
+      if (newNft === null) return;
       setNfts((nfts) => [newNft, ...nfts]);
     });
   };
