@@ -94,7 +94,7 @@ export const uploadToCrustIpfs = async (
 
   try {
     const response = await axios.post(
-      'https://gw.crustfiles.app/api/v0/add?pin=true',
+      process.env.CRUST_CLOUD_GATEWAY_URL + '/api/v0/add?pin=true',
       formData,
       {
         headers: {
