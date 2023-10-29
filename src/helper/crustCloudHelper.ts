@@ -75,6 +75,7 @@ const getAuthHeader = async (): Promise<string> => {
 };
 
 export const uploadToCrustIpfs = async (
+  gatewayUrl: string,
   fileName: string,
   fileData: File | string,
 ) => {
@@ -93,15 +94,11 @@ export const uploadToCrustIpfs = async (
   formData.append('file', newFile);
 
   try {
-    const response = await axios.post(
-      process.env.CRUST_CLOUD_GATEWAY_URL + '/api/v0/add?pin=true',
-      formData,
-      {
-        headers: {
-          Authorization: `Basic ${await getAuthHeader()}`,
-        },
+    const response = await axios.post(gatewayUrl, formData, {
+      headers: {
+        Authorization: `Basic ${await getAuthHeader()}`,
       },
-    );
+    });
 
     return response.data as IIpfs;
   } catch (e) {
