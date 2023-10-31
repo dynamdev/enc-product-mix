@@ -81,7 +81,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
 
       const formData = new FormData();
       formData.append('cid', ipfsData.Hash);
-      formData.append('fileSize', ipfsData.Size);
+      formData.append('filename', filename);
 
       await axios.post('/api/crust-network/pin', formData);
     } catch (_) {

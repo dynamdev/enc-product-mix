@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pinToCrustNetwork, uploadToCrustIpfs } from '@/helper/crustHelper';
+import { pinToCrustCloudNetwork } from '@/helper/crustCloudHelper';
 
 export async function GET() {
   return NextResponse.json({ message: 'Hello' });
@@ -8,14 +9,14 @@ export async function GET() {
 export async function POST(request: Request) {
   const data = await request.formData();
   const cid: string | null = data.get('cid') as unknown as string;
-  const fileSize: number | null = data.get('fileSize') as unknown as number;
+  const filename: string | null = data.get('filename') as unknown as string;
 
-  if (!cid || !fileSize) {
+  if (!cid || !filename) {
     return NextResponse.json({ error: 'Missing parameters!' }, { status: 400 });
   }
 
   try {
-    await pinToCrustNetwork(cid, fileSize);
+    await pinToCrustCloudNetwork(cid, filename);
     return NextResponse.json({ success: true });
   } catch (_) {
     return NextResponse.json(
