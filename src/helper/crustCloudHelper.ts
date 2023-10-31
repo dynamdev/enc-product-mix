@@ -29,7 +29,7 @@ const generateW3AuthToken = async (): Promise<string> => {
       tokenAddress: process.env.CRUST_CLOUD_NFT_TOKEN_ADDRESS,
       tokenId: process.env.CRUST_CLOUD_NFT_TOKEN_ID,
       effectiveTimestamp: (Date.now() / 1000) | 0,
-      expirationTimestamp: (Date.now() / 1000) | 0,
+      expirationTimestamp: 0,
     },
     primaryType: 'W3Bucket',
     types: {
@@ -79,41 +79,45 @@ export const uploadToCrustCloudIpfs = async (
   formData.append('file', newFile);
 
   try {
+    console.info('Started uploading file: ' + fileName);
+
+    const bearerToken = await generateW3AuthToken();
+
+    console.log('Done generating access token!');
+
     const response = await axios.post(
       'https://gw-seattle.crustcloud.io/api/v0/add?pin=true',
       formData,
       {
         headers: {
-          Authorization: `Bearer ${await generateW3AuthToken()}`,
+          Authorization: `Bearer ${bearerToken}`,
         },
       },
     );
 
-    return response.data as IIpfs;
-  } catch (e) {
-    throw new Error('All gateways timed out or failed.');
-  }
-};
+    console.log('Done uploading file!');
 
-export const pinToCrustCloudNetwork = async (cid: string, filename: string) => {
-  try {
-    const response = await axios.post(
-      'https://gw-seattle.crustcloud.io/api/v0/add?pin=true',
+    const responseData = response.data as IIpfs;
+
+    await axios.post(
+      'https://pin.crustcloud.io/psa/pins',
       {
-        cid: cid,
-        name: filename,
+        cid: responseData.Hash,
+        name: responseData.Name,
         meta: {
           gatewayId: 1,
         },
       },
       {
         headers: {
-          Authorization: `Bearer ${await generateW3AuthToken()}`,
+          Authorization: `Bearer ${bearerToken}`,
         },
       },
     );
 
-    return response.data as IIpfs;
+    console.log('Done pinning the file!');
+
+    return responseData;
   } catch (e) {
     throw new Error('All gateways timed out or failed.');
   }

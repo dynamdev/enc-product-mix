@@ -62,32 +62,23 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     let ipfsData: IIpfs;
 
     try {
-      setButtonUploadIpfsText('Uploading ' + fileTypeInfo + ' to IPFS...');
+      setButtonUploadIpfsText(
+        'Uploading ' + fileTypeInfo + ' to Crust Cloud...',
+      );
 
       const formData = new FormData();
       formData.append('filename', filename);
       formData.append('fileData', fileData);
 
-      ipfsData = (await axios.put('/api/crust-network/upload', formData)).data;
+      ipfsData = (
+        await axios.put('/api/crust-cloud/upload', formData, {
+          timeout: 0,
+        })
+      ).data;
     } catch (_) {
       setButtonUploadIpfsText('Upload to IPFS');
       setIsButtonUploadIpfsLoading(false);
       showErrorToast('Fail to upload ' + fileTypeInfo + '!');
-      return null;
-    }
-
-    try {
-      setButtonUploadIpfsText('Pinning ' + fileTypeInfo + ' to IPFS...');
-
-      const formData = new FormData();
-      formData.append('cid', ipfsData.Hash);
-      formData.append('filename', filename);
-
-      await axios.post('/api/crust-network/pin', formData);
-    } catch (_) {
-      setButtonUploadIpfsText('Pinning to IPFS');
-      setIsButtonUploadIpfsLoading(false);
-      showErrorToast('Fail to pin ' + fileTypeInfo + '!');
       return null;
     }
 
