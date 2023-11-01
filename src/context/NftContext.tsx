@@ -11,6 +11,7 @@ import {
 import axios from 'axios';
 import { useSmartContract } from '@/hooks/useSmartContract';
 import { INft } from '@/interfaces/INft';
+import { getIpfsCidFromUrl } from '@/helper/ipfsHelper';
 
 export const NftContext = createContext<{
   nfts: INft[];
@@ -43,7 +44,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
 
     const contractMetadataUris: { tokenId: number; uri: string }[] = [];
 
-    for (let x = 1; x < totalSupplyNumber; x++) {
+    for (let x = 1; x <= totalSupplyNumber; x++) {
       contractMetadataUris.push({
         tokenId: x,
         uri: await contract.tokenURI(x),
@@ -99,8 +100,8 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     localMetadataUris = localMetadataUris.filter(
       (uri) =>
         !contractMetadataUris
-          .map((metadataUris) => metadataUris.uri)
-          .includes(uri),
+          .map((metadataUri) => getIpfsCidFromUrl(metadataUri.uri))
+          .includes(getIpfsCidFromUrl(uri)),
     );
 
     //update local storage
@@ -148,7 +149,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
 
   useEffect(() => {
     initializeNfts().then();
-  }, [initializeNfts]);
+  }, [initializeNfts, contract]);
 
   return (
     <NftContext.Provider

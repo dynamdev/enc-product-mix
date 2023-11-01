@@ -1,24 +1,22 @@
-// @ts-ignore
-import Hash from 'ipfs-only-hash';
+export const getIpfsCidFromUrl = (url: string): string | null => {
+  try {
+    if (url.startsWith('ipfs://')) {
+      // Extract CID directly after 'ipfs://'
+      return url.slice(7);
+    } else {
+      // Assuming the URL contains the IPFS CID in its path, extract it
+      const ipfsPrefix = '/ipfs/';
+      const startIndex = url.indexOf(ipfsPrefix);
 
-export const generateCID = async (
-  filename: string,
-  data: File | string,
-): Promise<string> => {
-  return new Promise(async (resolve, reject) => {
-    const file: File =
-      typeof data === 'string'
-        ? new File([data], filename, {
-            type: 'text/plain',
-          })
-        : new File([await data.arrayBuffer()], filename, {
-            type: data.type,
-          });
+      if (startIndex === -1) {
+        return null;
+      }
 
-    const bytes = await file.arrayBuffer();
-    const bufferData = Buffer.from(bytes);
-
-    const cid = await Hash.of(bufferData);
-    resolve(cid);
-  });
+      const cid = url.slice(startIndex + ipfsPrefix.length);
+      return cid.split('/')[0]; // Return the CID part only
+    }
+  } catch (error) {
+    console.error('Error extracting IPFS CID from URL:', error);
+    return null;
+  }
 };
