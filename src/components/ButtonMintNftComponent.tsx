@@ -68,7 +68,10 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
     setLoadingMessage('Minting...');
 
     contract
-      .safeMint(videoCid, 'https://ipfs.io/ipfs/' + jsonCid)
+      .safeMint(
+        videoCid,
+        process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + jsonCid,
+      )
       .then((contractResponse) => {
         setIsLoading(true);
         setLoadingMessage('Minting...');
@@ -79,6 +82,9 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
               contractResponse.hash +
               '&account=' +
               accounts[0],
+            {
+              timeout: 0,
+            },
           )
           .then((axiosResponse) => {
             const result = axiosResponse.data as {
@@ -94,7 +100,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
 
             //open transaction in blockchain explorer
             window.open(
-              process.env.NEXT_PUBLIC_BLOCKCHAIN_EXPLORER_URL +
+              process.env.NEXT_PUBLIC_CONTRACT_EXPLORER_URL +
                 contractResponse.hash,
             );
 
