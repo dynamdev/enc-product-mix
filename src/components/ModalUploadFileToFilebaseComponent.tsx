@@ -250,14 +250,19 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
                 }}
               />
               {filename !== '' && (
-                <sub className={'p-2 pb-3'}>
-                  <span className={'font-bold'}>Generated Filenames: </span>
-                  <span>
-                    {['.json', '.mp4', '.gif']
-                      .map((extension) => filename + extension)
-                      .join(', ')}
-                  </span>
-                </sub>
+                <div className={'p-2 pb-3 flex flex-row gap-2 h-auto text-xs'}>
+                  <div className={'font-bold flex'}>Filenames:</div>
+                  <div className={'flex flex-wrap w-full gap-1'}>
+                    {['.json', '.mp4', '.gif'].map((extension, index) => {
+                      return (
+                        <div key={extension} className={''}>
+                          {filename + extension}
+                          {index !== 2 && ','}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
             </div>
 
