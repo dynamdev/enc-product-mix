@@ -129,9 +129,9 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       name: name,
       description: description,
       image:
-        process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + thumbnailResponse.Hash,
+        process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + thumbnailResponse.Hash,
       animation_url:
-        process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + videoResponse.Hash,
+        process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + videoResponse.Hash,
     });
 
     let jsonResponse = await uploadAndPinToCrust(
