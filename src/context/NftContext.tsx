@@ -45,9 +45,13 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     const contractMetadataUris: { tokenId: number; uri: string }[] = [];
 
     for (let x = 1; x <= totalSupplyNumber; x++) {
+      const uri = await contract.tokenURI(x);
+
       contractMetadataUris.push({
         tokenId: x,
-        uri: await contract.tokenURI(x),
+        uri:
+          process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL! +
+          getIpfsCidFromUrl(uri),
       });
     }
 
