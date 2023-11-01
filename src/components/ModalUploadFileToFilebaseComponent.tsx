@@ -249,6 +249,16 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
                   setFilename(e.target.value);
                 }}
               />
+              {filename !== '' && (
+                <sub className={'p-2 pb-3'}>
+                  <span className={'font-bold'}>Generated Filenames: </span>
+                  <span>
+                    {['.json', '.mp4', '.gif']
+                      .map((extension) => filename + extension)
+                      .join(', ')}
+                  </span>
+                </sub>
+              )}
             </div>
 
             <div className="form-control w-full">
