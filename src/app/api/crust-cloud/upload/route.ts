@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { uploadToCrustIpfs } from '@/helper/crustHelper';
 import { uploadToCrustCloudIpfs } from '@/helper/crustCloudHelper';
 
 export async function GET() {
