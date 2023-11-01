@@ -19,13 +19,17 @@ export const SmartContractContext = createContext<{
 export const SmartContractProvider: FunctionComponent<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { signer } = useMetamask();
+  const { signer, network } = useMetamask();
 
   const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [contractOwner, setContractOwner] = useState<string | null>(null);
 
   useEffect(() => {
-    if (signer === null) {
+    if (
+      signer === null ||
+      network === null ||
+      network.chainId !== parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!)
+    ) {
       setContract(null);
       return;
     }
@@ -37,7 +41,7 @@ export const SmartContractProvider: FunctionComponent<{
         signer as any,
       ),
     );
-  }, [signer]);
+  }, [network, signer]);
 
   useEffect(() => {
     if (contract === null) {

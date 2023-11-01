@@ -9,7 +9,7 @@ import { useMetamask } from '@/hooks/useMetamask';
 
 export default function Home() {
   const { nfts, isLoading } = useNft();
-  const { accounts } = useMetamask();
+  const { accounts, network } = useMetamask();
 
   return (
     <>
@@ -22,11 +22,22 @@ export default function Home() {
           </>
         )}
 
-        {!isLoading && nfts.length === 0 && accounts.length === 0 && (
+        {!isLoading && accounts.length === 0 && (
           <div className={'h-96 flex flex-col justify-center text-lg'}>
             Please connect your metamask
           </div>
         )}
+
+        {!isLoading &&
+          accounts.length !== 0 &&
+          network !== null &&
+          network.chainId !==
+            parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!) && (
+            <div className={'h-96 flex flex-col justify-center text-lg'}>
+              Please change your metamask network to{' '}
+              {process.env.NEXT_PUBLIC_CONTRACT_CHAIN_NAME}
+            </div>
+          )}
 
         {!isLoading &&
           nfts.length !== 0 &&

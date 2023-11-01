@@ -68,12 +68,16 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
         setAccounts(acc);
       },
     );
+
     (window.ethereum as GenericProvider).on(
       'chainChanged',
       async (net: number) => {
         console.log('chainChanged', net);
+        // Refresh the page to handle the network change
+        window.location.reload();
       },
     );
+
     (window.ethereum as GenericProvider).on(
       'disconnect',
       (error: ProviderRpcError) => {

@@ -26,7 +26,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   {}
 >(({}, ref) => {
   const { addNft } = useNft();
-  const { accounts } = useMetamask();
+  const { accounts, network } = useMetamask();
   const { contractOwner } = useSmartContract();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
@@ -159,6 +159,14 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       return;
     }
 
+    if (
+      network !== null &&
+      network.chainId !== parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!)
+    ) {
+      showErrorToast('Please change your metamask network to Polygon!');
+      return;
+    }
+
     if (contractOwner === null) {
       showErrorToast('Checking the owner of the contract!');
       return;
@@ -170,7 +178,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     }
 
     setIsModalOpen((prevState) => !prevState);
-  }, [accounts, contractOwner]);
+  }, [accounts, contractOwner, network]);
 
   useImperativeHandle(ref, () => ({
     toggleModal,
