@@ -45,12 +45,15 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       return;
     }
 
+    console.log('mint button loaded: ' + videoCid);
+
     setIsLoading(true);
     setLoadingMessage('Checking if NFT is already minted');
 
     contract
       .getMintDateByVideoCid(videoCid)
       .then((result) => {
+        console.log('mint date from contract: ' + result);
         setMintDate(new Date(parseInt(result) * 1000));
       })
       .catch(() => {})
