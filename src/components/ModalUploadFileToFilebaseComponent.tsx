@@ -70,6 +70,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       formData.append('filename', filename);
       formData.append('fileData', fileData);
 
+      //TODO: update this to do upload on frontend
       ipfsData = (
         await axios.put('/api/crust-cloud/upload', formData, {
           timeout: 0,
