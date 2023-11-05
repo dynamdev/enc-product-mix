@@ -87,12 +87,47 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
   };
 
   const connect = async () => {
+    const POLYGON_CHAIN_ID = parseInt(
+      process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!,
+    );
+
+    const POLYGON_CHAIN_ID_HEX = '0x' + POLYGON_CHAIN_ID.toString(16);
+
     const provider = setupProvider();
+
+    // Check the current network
+    const network: Network = await provider.getNetwork();
+
+    // If not on Polygon, prompt the user to switch
+    if (network.chainId !== POLYGON_CHAIN_ID) {
+      try {
+        await provider.send('wallet_switchEthereumChain', [
+          {
+            chainId: POLYGON_CHAIN_ID_HEX,
+          },
+        ]);
+      } catch (error) {
+        const switchError = error as {
+          code: number;
+          data?: any;
+        };
+
+        // This error code indicates that the requested chain is not added by the user in MetaMask.
+        if (switchError.code === 4902) {
+          throw new Error(
+            'Please add the Polygon network to MetaMask and then connect.',
+          );
+        } else {
+          throw switchError;
+        }
+      }
+    }
+
     const accounts: string[] = await provider.send('eth_requestAccounts', []);
     const checksumAccounts: string[] = accounts.map((account) =>
       getAddress(account),
     );
-    const network: Network = await provider.getNetwork();
+
     const signer: JsonRpcSigner = provider.getSigner();
     setNetwork(network);
     setAccounts(checksumAccounts);
