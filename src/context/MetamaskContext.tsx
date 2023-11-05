@@ -34,6 +34,7 @@ export const MetamaskContext = createContext<{
   accounts: string[];
   network: Network | null;
   connect: () => Promise<void>;
+  disconnect: () => void;
   getAccounts: () => Promise<string[]>;
   sendTransaction: (
     from: string,
@@ -72,16 +73,14 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     (window.ethereum as GenericProvider).on(
       'chainChanged',
       async (net: number) => {
-        console.log('chainChanged', net);
-        // Refresh the page to handle the network change
-        window.location.reload();
+        //console.log('chainChanged', net);
       },
     );
 
     (window.ethereum as GenericProvider).on(
       'disconnect',
       (error: ProviderRpcError) => {
-        throw Error(error.message);
+        //throw Error(error.message);
       },
     );
   };
@@ -123,8 +122,11 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
       }
     }
 
-    const accounts: string[] = await provider.send('eth_requestAccounts', []);
-    const checksumAccounts: string[] = accounts.map((account) =>
+    const requestedAccounts: string[] = await provider.send(
+      'eth_requestAccounts',
+      [],
+    );
+    const checksumAccounts: string[] = requestedAccounts.map((account) =>
       getAddress(account),
     );
 
@@ -132,6 +134,18 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     setNetwork(network);
     setAccounts(checksumAccounts);
     setSigner(signer);
+  };
+
+  const disconnect = () => {
+    if (provider) {
+      provider.removeAllListeners();
+    }
+
+    // Reset state
+    setProvider(null);
+    setSigner(null);
+    setAccounts([]);
+    setNetwork(null);
   };
 
   const getAccounts = async () => {
@@ -164,6 +178,7 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
         accounts,
         network,
         connect,
+        disconnect,
         getAccounts,
         sendTransaction,
       }}

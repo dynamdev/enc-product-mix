@@ -3,7 +3,7 @@
 import { useMetamask } from '@/hooks/useMetamask';
 
 export const ButtonMetamaskComponent = () => {
-  const { accounts, connect } = useMetamask();
+  const { accounts, connect, disconnect } = useMetamask();
 
   const formatAddress = (str: string) => {
     // Ensure the string has at least 6 characters
@@ -27,7 +27,14 @@ export const ButtonMetamaskComponent = () => {
         type="button"
         className="btn bg-white my-auto mx-4"
         onClick={() => {
-          connect().then(() => {});
+          if (accounts.length === 0) {
+            connect().then(() => {});
+            return;
+          }
+
+          if (confirm('Do you want to disconnect?')) {
+            disconnect();
+          }
         }}
       >
         <svg
