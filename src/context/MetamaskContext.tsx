@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, FunctionComponent, ReactNode, useState } from 'react';
+import {
+  createContext,
+  FunctionComponent,
+  ReactNode,
+  useEffect,
+  useState,
+} from 'react';
 import {
   ExternalProvider,
   JsonRpcSigner,
@@ -73,7 +79,10 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     (window.ethereum as GenericProvider).on(
       'chainChanged',
       async (net: number) => {
-        //console.log('chainChanged', net);
+        // console.log('chainChanged ' + net);
+        // const network = await provider.detectNetwork();
+        // console.log(network);
+        // setNetwork(network);
       },
     );
 
@@ -92,10 +101,9 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
 
     const POLYGON_CHAIN_ID_HEX = '0x' + POLYGON_CHAIN_ID.toString(16);
 
-    const provider = setupProvider();
-
-    // Check the current network
-    const network: Network = await provider.getNetwork();
+    let provider = setupProvider();
+    let network: Network = await provider.getNetwork();
+    let checksumAccounts: string[] = [];
 
     // If not on Polygon, prompt the user to switch
     if (network.chainId !== POLYGON_CHAIN_ID) {
@@ -105,6 +113,9 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
             chainId: POLYGON_CHAIN_ID_HEX,
           },
         ]);
+
+        provider = setupProvider();
+        network = await provider.getNetwork();
       } catch (error) {
         const switchError = error as {
           code: number;
@@ -122,18 +133,21 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
       }
     }
 
-    const requestedAccounts: string[] = await provider.send(
-      'eth_requestAccounts',
-      [],
-    );
-    const checksumAccounts: string[] = requestedAccounts.map((account) =>
-      getAddress(account),
-    );
+    try {
+      const requestedAccounts: string[] = await provider.send(
+        'eth_requestAccounts',
+        [],
+      );
+      checksumAccounts = requestedAccounts.map((account) =>
+        getAddress(account),
+      );
+    } catch (_) {}
 
-    const signer: JsonRpcSigner = provider.getSigner();
+    if (checksumAccounts.length === 0) return;
+
     setNetwork(network);
     setAccounts(checksumAccounts);
-    setSigner(signer);
+    setSigner(provider.getSigner());
   };
 
   const disconnect = () => {
