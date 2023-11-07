@@ -4,6 +4,8 @@ import { useSmartContract } from '@/hooks/useSmartContract';
 import { getSmartContractCleanErrorMessage } from '@/helper/smartContractHelper';
 import { showErrorToast } from '@/helper/toastHelper';
 import axios from 'axios';
+import { delay } from '@/helper/commonHelper';
+import { Interface, ZeroAddress } from 'ethers';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -45,10 +47,10 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       return;
     }
 
-    console.log('mint button loaded: ' + videoCid);
-
     setIsLoading(true);
     setLoadingMessage('Checking if NFT is already minted');
+
+    setMintDate(null);
 
     contract
       .getMintDateByVideoCid(videoCid)
@@ -61,6 +63,22 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         setIsLoading(false);
       });
   }, [accounts, accounts.length, contract, contractOwner, videoCid]);
+
+  const getNftTokenId = useCallback(
+    async (txHash: string): Promise<number | null> => {
+      if (signer === null) return null;
+
+      console.log(signer);
+      console.log(txHash);
+
+      const txReceipt = await signer.provider.getTransactionReceipt(txHash);
+
+      console.log(txReceipt);
+
+      return null;
+    },
+    [signer],
+  );
 
   const onClickMint = useCallback(() => {
     if (accounts.length === 0) return;
@@ -79,55 +97,36 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         setIsLoading(true);
         setLoadingMessage('Minting...');
 
-        axios
-          .get(
-            '/api/blockchain/check?txhash=' +
-              contractResponse.hash +
-              '&account=' +
-              accounts[0],
-            {
-              timeout: 0,
-            },
-          )
-          .then((axiosResponse) => {
-            const result = axiosResponse.data as {
-              success: boolean;
-              token: number;
-            };
-
-            if (!result.success) {
-              setIsLoading(false);
-              showErrorToast('Minting failed!');
-              return;
-            }
-
-            //open transaction in blockchain explorer
-            window.open(
-              process.env.NEXT_PUBLIC_CONTRACT_EXPLORER_URL +
-                contractResponse.hash,
-            );
-
-            //open link opensea
-            window.open(
-              process.env.NEXT_PUBLIC_OPENSEA_BASE_URL! +
-                process.env.NEXT_PUBLIC_CONTRACT_ADDRESS! +
-                '/' +
-                result.token,
-            );
-
-            setMintDate(new Date());
+        getNftTokenId(contractResponse.hash).then((tokenId) => {
+          if (tokenId === null) {
             setIsLoading(false);
-          })
-          .catch((error) => {
-            showErrorToast(error.message);
-            setIsLoading(false);
-          });
+            showErrorToast('Minting failed!');
+            return;
+          }
+
+          //open transaction in blockchain explorer
+          window.open(
+            process.env.NEXT_PUBLIC_CONTRACT_EXPLORER_URL +
+              contractResponse.hash,
+          );
+
+          //open link opensea
+          window.open(
+            process.env.NEXT_PUBLIC_OPENSEA_BASE_URL! +
+              process.env.NEXT_PUBLIC_CONTRACT_ADDRESS! +
+              '/' +
+              tokenId,
+          );
+
+          setMintDate(new Date());
+          setIsLoading(false);
+        });
       })
       .catch((error) => {
         showErrorToast(getSmartContractCleanErrorMessage(error));
         setIsLoading(false);
       });
-  }, [accounts, contract, contractOwner, jsonCid, videoCid]);
+  }, [accounts, contract, contractOwner, getNftTokenId, jsonCid, videoCid]);
 
   return (
     <>
