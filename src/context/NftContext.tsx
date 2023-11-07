@@ -155,10 +155,6 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     initializeNfts().then();
   }, [initializeNfts, contract]);
 
-  useEffect(() => {
-    console.log(nfts);
-  }, [nfts]);
-
   return (
     <NftContext.Provider
       value={{
