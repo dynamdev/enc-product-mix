@@ -16,6 +16,10 @@ import { showErrorToast } from '@/helper/toastHelper';
 import { IIpfs } from '@/interfaces/IIpfs';
 import { removeExtension } from '@/helper/fileHelper';
 import { useTrezor } from '@/hooks/useTrezor';
+import {
+  pinToCrustCloud,
+  uploadToCrustCloudGateway,
+} from '@/helper/crustCloudHelper';
 
 export interface UploadFileToFilebaseModalComponentElement {
   toggleModal: () => void;
@@ -56,35 +60,42 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   };
 
   const uploadAndPinToCrust = async (
+    w3AuthToken: string,
     fileTypeInfo: string,
     filename: string,
     fileData: string | File,
   ): Promise<null | IIpfs> => {
-    let ipfsData: IIpfs;
+    setButtonUploadIpfsText('Uploading ' + fileTypeInfo + ' to Crust Cloud...');
 
-    try {
-      setButtonUploadIpfsText(
-        'Uploading ' + fileTypeInfo + ' to Crust Cloud...',
-      );
+    const ipfsResponse = await uploadToCrustCloudGateway(
+      w3AuthToken,
+      filename,
+      fileData,
+    );
 
-      const formData = new FormData();
-      formData.append('filename', filename);
-      formData.append('fileData', fileData);
-
-      //TODO: update this to do upload on frontend
-      ipfsData = (
-        await axios.put('/api/crust-cloud/upload', formData, {
-          timeout: 0,
-        })
-      ).data;
-    } catch (_) {
+    if (ipfsResponse === null) {
+      showErrorToast('Fail to upload ' + fileTypeInfo + '!');
       setButtonUploadIpfsText('Upload to IPFS');
       setIsButtonUploadIpfsLoading(false);
-      showErrorToast('Fail to upload ' + fileTypeInfo + '!');
       return null;
     }
 
-    return ipfsData;
+    setButtonUploadIpfsText('Pinning ' + fileTypeInfo + ' to Crust Cloud...');
+
+    const pinningResponse = await pinToCrustCloud(
+      w3AuthToken,
+      ipfsResponse.Name,
+      ipfsResponse.Hash,
+    );
+
+    if (!pinningResponse) {
+      showErrorToast('Fail to pin ' + fileTypeInfo + '!');
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
+      return null;
+    }
+
+    return ipfsResponse;
   };
 
   const onUploadToIpfs = async () => {
@@ -92,13 +103,25 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
 
     const isFormValid = refFrom.current.checkValidity();
     if (!isFormValid) {
-      const token = await getCrustCloudW3AuthToken();
-
-      console.log(token);
-
       Store.addNotification({
         type: 'danger',
         message: 'Please fill out all required fields before submitting.',
+        container: 'top-right',
+        dismiss: {
+          duration: 3000,
+          onScreen: true,
+          showIcon: true,
+        },
+      });
+      return;
+    }
+
+    const w3AuthToken = await getCrustCloudW3AuthToken();
+
+    if (w3AuthToken === null) {
+      Store.addNotification({
+        type: 'danger',
+        message: 'Failed to generate W3 Auth Token!',
         container: 'top-right',
         dismiss: {
           duration: 3000,
@@ -118,6 +141,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     const filenameJson = filename + '.json';
 
     const videoResponse = await uploadAndPinToCrust(
+      w3AuthToken,
       'video',
       filenameVideo,
       selectedVideo!,
@@ -125,6 +149,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     if (videoResponse === null) return;
 
     let thumbnailResponse = await uploadAndPinToCrust(
+      w3AuthToken,
       'thumbnail',
       filenameThumbnail,
       gif,
@@ -141,6 +166,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     });
 
     let jsonResponse = await uploadAndPinToCrust(
+      w3AuthToken,
       'metadata',
       filenameJson,
       jsonContent,

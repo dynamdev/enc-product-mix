@@ -5,9 +5,6 @@ import { ethers, JsonRpcProvider } from 'ethers';
 import TrezorConnect, {
   EthereumSignTypedDataMessage,
 } from '@trezor/connect-web';
-import { keccak256 } from 'js-sha3';
-import { TypedDataUtils } from 'eth-sig-util';
-import { bufferToHex } from 'ethereumjs-util';
 
 export const TrezorContext = createContext<{
   account: string | null;
@@ -91,7 +88,7 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
         tokenAddress: process.env.NEXT_PUBLIC_CRUST_CLOUD_NFT_TOKEN_ADDRESS,
         tokenId: process.env.NEXT_PUBLIC_CRUST_CLOUD_NFT_TOKEN_ID,
         effectiveTimestamp: (currentTime / 1000) | 0,
-        expirationTimestamp: (timeIn30Minutes / 1000) | 0,
+        expirationTimestamp: 0,
       },
       primaryType: 'W3Bucket',
       types: {

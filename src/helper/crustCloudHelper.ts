@@ -1,69 +1,11 @@
 import axios from 'axios';
 import { IIpfs } from '@/interfaces/IIpfs';
-import { JsonRpcProvider, Wallet } from 'ethers';
 
-const generateW3AuthToken = async (): Promise<string> => {
-  const METAMASK_PRIVATE_KEY = process.env.METAMASK_PRIVATE_KEY;
-  const INFURA_ENDPOINT = process.env.INFURA_ENDPOINT;
-
-  if (!METAMASK_PRIVATE_KEY || !INFURA_ENDPOINT) {
-    throw new Error(
-      'Environment variables METAMASK_PRIVATE_KEY or INFURA_ENDPOINT are not set.',
-    );
-  }
-
-  const provider = new JsonRpcProvider(INFURA_ENDPOINT);
-  const wallet = new Wallet(METAMASK_PRIVATE_KEY, provider);
-  const account = wallet.address;
-
-  const typedData = {
-    domain: {
-      chainId: '1',
-      name: 'cloud3.cc',
-      verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
-      version: '1',
-    },
-    message: {
-      description: 'Sign for W3 Bucket Access Authentication',
-      signingAddress: account,
-      tokenAddress: process.env.CRUST_CLOUD_NFT_TOKEN_ADDRESS,
-      tokenId: process.env.CRUST_CLOUD_NFT_TOKEN_ID,
-      effectiveTimestamp: (Date.now() / 1000) | 0,
-      expirationTimestamp: 0,
-    },
-    primaryType: 'W3Bucket',
-    types: {
-      W3Bucket: [
-        { name: 'description', type: 'string' },
-        { name: 'signingAddress', type: 'address' },
-        { name: 'tokenAddress', type: 'address' },
-        { name: 'tokenId', type: 'string' },
-        { name: 'effectiveTimestamp', type: 'uint256' },
-        { name: 'expirationTimestamp', type: 'uint256' },
-      ],
-    },
-  };
-
-  // Sign
-  const signature = await wallet.signTypedData(
-    typedData.domain,
-    typedData.types,
-    typedData.message,
-  );
-
-  // Generate Bearer Token
-  const bearerTokenData = {
-    data: typedData,
-    signature: signature,
-  };
-
-  return Buffer.from(JSON.stringify(bearerTokenData)).toString('base64');
-};
-
-export const uploadToCrustCloudIpfs = async (
+export const uploadToCrustCloudGateway = async (
+  bearerToken: string,
   fileName: string,
   fileData: File | string,
-): Promise<IIpfs> => {
+): Promise<IIpfs | null> => {
   let newFile;
 
   if (fileData instanceof File) {
@@ -79,12 +21,6 @@ export const uploadToCrustCloudIpfs = async (
   formData.append('file', newFile);
 
   try {
-    console.info('Started uploading file: ' + fileName);
-
-    const bearerToken = await generateW3AuthToken();
-
-    console.log('Done generating access token!');
-
     const response = await axios.post(
       'https://gw-seattle.crustcloud.io/api/v0/add?pin=true',
       formData,
@@ -95,15 +31,23 @@ export const uploadToCrustCloudIpfs = async (
       },
     );
 
-    console.log('Done uploading file!');
+    return response.data as IIpfs;
+  } catch (e) {
+    return null;
+  }
+};
 
-    const responseData = response.data as IIpfs;
-
+export const pinToCrustCloud = async (
+  bearerToken: string,
+  fileName: string,
+  cid: string,
+): Promise<boolean> => {
+  try {
     await axios.post(
       'https://pin.crustcloud.io/psa/pins',
       {
-        cid: responseData.Hash,
-        name: responseData.Name,
+        cid: cid,
+        name: fileName,
         meta: {
           gatewayId: 1,
         },
@@ -115,10 +59,8 @@ export const uploadToCrustCloudIpfs = async (
       },
     );
 
-    console.log('Done pinning the file!');
-
-    return responseData;
+    return true;
   } catch (e) {
-    throw new Error('All gateways timed out or failed.');
+    return false;
   }
 };
