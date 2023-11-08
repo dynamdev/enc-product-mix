@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, FunctionComponent, ReactNode, useState } from 'react';
-import { JsonRpcProvider } from 'ethers';
+import { ethers, JsonRpcProvider } from 'ethers';
 import TrezorConnect, {
   EthereumSignTypedDataMessage,
 } from '@trezor/connect-web';
@@ -80,10 +80,10 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
 
     const typedDataMessage: EthereumSignTypedDataMessage<any> = {
       domain: {
-        chainId: 1,
         name: 'cloud3.cc',
-        verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
         version: '1',
+        chainId: 1,
+        verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
       },
       message: {
         description: 'Sign for W3 Bucket Access Authentication',
@@ -95,12 +95,6 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
       },
       primaryType: 'W3Bucket',
       types: {
-        EIP712Domain: [
-          { name: 'name', type: 'string' },
-          { name: 'version', type: 'string' },
-          { name: 'chainId', type: 'uint256' },
-          { name: 'verifyingContract', type: 'address' },
-        ],
         W3Bucket: [
           { name: 'description', type: 'string' },
           { name: 'signingAddress', type: 'address' },
@@ -113,12 +107,20 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
     };
 
     const result = await TrezorConnect.ethereumSignTypedData({
-      metamask_v4_compat: false,
       path: "m/44'/60'/0'/0/0",
       data: typedDataMessage,
+      metamask_v4_compat: true,
+      domain_separator_hash: ethers.TypedDataEncoder.hashDomain(
+        typedDataMessage.domain as any,
+      ),
+      message_hash: ethers.keccak256(
+        ethers.TypedDataEncoder.encode(
+          typedDataMessage.domain as any,
+          typedDataMessage.types,
+          typedDataMessage.message,
+        ),
+      ),
     });
-
-    console.log(result);
 
     if (result.success) {
       // Generate Bearer Token
