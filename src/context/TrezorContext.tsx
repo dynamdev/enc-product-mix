@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  createContext,
-  FunctionComponent,
-  ReactNode,
-  useEffect,
-  useState,
-} from 'react';
-import { JsonRpcSigner, Network, Web3Provider } from '@ethersproject/providers';
-import { getAddress, JsonRpcProvider, Wallet } from 'ethers';
+import { createContext, FunctionComponent, ReactNode, useState } from 'react';
+import { JsonRpcProvider } from 'ethers';
 import TrezorConnect from '@trezor/connect-web';
 
 export const TrezorContext = createContext<{
@@ -71,6 +64,12 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
     );
   };
 
+  const disconnect = () => {
+    setAccount(null);
+    setStorageProvider(null);
+    setContractProvider(null);
+  };
+
   return (
     <TrezorContext.Provider
       value={{
@@ -80,7 +79,7 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
         connect: () => {
           connect().then();
         },
-        disconnect: () => {},
+        disconnect,
       }}
     >
       {children}
