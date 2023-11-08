@@ -55,7 +55,6 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
     contract
       .getMintDateByVideoCid(videoCid)
       .then((result) => {
-        console.log('mint date from contract: ' + result);
         setMintDate(new Date(parseInt(result) * 1000));
       })
       .catch(() => {})
@@ -68,12 +67,26 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
     async (txHash: string): Promise<number | null> => {
       if (signer === null) return null;
 
-      console.log(signer);
-      console.log(txHash);
+      while (true) {
+        const txReceipt = await signer.provider.getTransactionReceipt(txHash);
 
-      const txReceipt = await signer.provider.getTransactionReceipt(txHash);
+        console.log(txReceipt);
 
-      console.log(txReceipt);
+        if (txReceipt === null) {
+          await delay(500);
+          continue;
+        }
+
+        if (txReceipt.logs.length === 0) {
+          break;
+        }
+
+        const txReceiptLog = txReceipt.logs.filter(
+          (log) => log.topics.length === 1,
+        )[0];
+
+        return parseInt(txReceiptLog.data, 16);
+      }
 
       return null;
     },
