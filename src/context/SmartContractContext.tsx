@@ -10,6 +10,7 @@ import {
 import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { useMetamask } from '@/hooks/useMetamask';
+import { useTrezor } from '@/hooks/useTrezor';
 
 export const SmartContractContext = createContext<{
   contract: ethers.Contract | null;
@@ -19,17 +20,13 @@ export const SmartContractContext = createContext<{
 export const SmartContractProvider: FunctionComponent<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { signer, network } = useMetamask();
+  const { contractProvider } = useTrezor();
 
   const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [contractOwner, setContractOwner] = useState<string | null>(null);
 
   useEffect(() => {
-    if (
-      signer === null ||
-      network === null ||
-      network.chainId !== parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!)
-    ) {
+    if (contractProvider === null) {
       setContract(null);
       return;
     }
@@ -38,10 +35,10 @@ export const SmartContractProvider: FunctionComponent<{
       new ethers.Contract(
         process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
         enchantmintProductMixNftAbi,
-        signer as any,
+        contractProvider,
       ),
     );
-  }, [network, signer]);
+  }, [contractProvider]);
 
   useEffect(() => {
     if (contract === null) {

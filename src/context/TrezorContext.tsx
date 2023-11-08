@@ -8,12 +8,13 @@ import {
   useState,
 } from 'react';
 import { JsonRpcSigner, Network, Web3Provider } from '@ethersproject/providers';
-import { getAddress } from 'ethers';
+import { getAddress, JsonRpcProvider, Wallet } from 'ethers';
 import TrezorConnect from '@trezor/connect-web';
 
 export const TrezorContext = createContext<{
-  signer: JsonRpcSigner | null;
-  account: string;
+  account: string | null;
+  contractProvider: JsonRpcProvider | null;
+  storageProvider: JsonRpcProvider | null;
   connect: () => void;
   disconnect: () => void;
 } | null>(null);
@@ -21,10 +22,13 @@ export const TrezorContext = createContext<{
 export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
-  const [account, setAccount] = useState<string>('');
+  const [account, setAccount] = useState<string | null>(null);
+  const [contractProvider, setContractProvider] =
+    useState<JsonRpcProvider | null>(null);
+  const [storageProvider, setStorageProvider] =
+    useState<JsonRpcProvider | null>(null);
 
-  const connect = async () => {
+  const getTrezorAccount = async (): Promise<string | null> => {
     try {
       // Initialize Trezor Connect
       TrezorConnect.manifest({
@@ -38,27 +42,41 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
       });
 
       if (result.success) {
-        setAccount(result.payload.address);
-        return;
+        return result.payload.address;
       } else {
         // If there was an error, handle it accordingly
         console.error('Error:', result.payload.error);
-        return;
+        return null;
       }
     } catch (error) {
       console.error('An unexpected error occurred:', error);
-      return;
+      return null;
     } finally {
       // Close the Trezor Connect session
       await TrezorConnect.dispose();
     }
   };
 
+  const connect = async () => {
+    const account = await getTrezorAccount();
+
+    if (account === null) return;
+
+    setAccount(account);
+    setStorageProvider(
+      new JsonRpcProvider(process.env.NEXT_PUBLIC_STORAGE_RPC_URL),
+    );
+    setContractProvider(
+      new JsonRpcProvider(process.env.NEXT_PUBLIC_CONTRACT_RPC_URL),
+    );
+  };
+
   return (
     <TrezorContext.Provider
       value={{
-        signer,
         account,
+        contractProvider,
+        storageProvider,
         connect: () => {
           connect().then();
         },

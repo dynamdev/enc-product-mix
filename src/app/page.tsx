@@ -6,10 +6,11 @@ import { FabUploadToFilebaseComponent } from '@/components/FabUploadToFilebaseCo
 import { useNft } from '@/hooks/useNft';
 import { ReactNotifications } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
+import { useTrezor } from '@/hooks/useTrezor';
 
 export default function Home() {
   const { nfts, isLoading } = useNft();
-  const { accounts, network } = useMetamask();
+  const { account } = useTrezor();
 
   return (
     <>
@@ -22,39 +23,20 @@ export default function Home() {
           </>
         )}
 
-        {!isLoading && accounts.length === 0 && (
+        {!isLoading && account === null && (
           <div className={'h-96 flex flex-col justify-center text-lg'}>
             Please connect your metamask
           </div>
         )}
 
-        {!isLoading &&
-          accounts.length !== 0 &&
-          network !== null &&
-          network.chainId !==
-            parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!) && (
-            <div className={'h-96 flex flex-col justify-center text-lg'}>
-              Please change your metamask network to{' '}
-              {process.env.NEXT_PUBLIC_CONTRACT_CHAIN_NAME}
-            </div>
-          )}
+        {!isLoading && account !== null && nfts.length === 0 && (
+          <div className={'h-96 flex flex-col justify-center text-lg'}>
+            No NFT Data
+          </div>
+        )}
 
         {!isLoading &&
-          accounts.length !== 0 &&
-          network !== null &&
-          network.chainId ===
-            parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!) &&
-          nfts.length === 0 && (
-            <div className={'h-96 flex flex-col justify-center text-lg'}>
-              No NFT Data
-            </div>
-          )}
-
-        {!isLoading &&
-          accounts.length !== 0 &&
-          network !== null &&
-          network.chainId ===
-            parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!) &&
+          account !== null &&
           nfts.map((nft, index) => {
             return (
               <NftCardComponent

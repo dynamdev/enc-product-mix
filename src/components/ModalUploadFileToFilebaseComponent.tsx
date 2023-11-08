@@ -15,6 +15,7 @@ import { useSmartContract } from '@/hooks/useSmartContract';
 import { showErrorToast } from '@/helper/toastHelper';
 import { IIpfs } from '@/interfaces/IIpfs';
 import { removeExtension } from '@/helper/fileHelper';
+import { useTrezor } from '@/hooks/useTrezor';
 
 export interface UploadFileToFilebaseModalComponentElement {
   toggleModal: () => void;
@@ -26,7 +27,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   {}
 >(({}, ref) => {
   const { addNft } = useNft();
-  const { accounts, network } = useMetamask();
+  const { account } = useTrezor();
   const { contractOwner } = useSmartContract();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
@@ -155,16 +156,8 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   };
 
   const toggleModal = useCallback(() => {
-    if (accounts.length === 0) {
-      showErrorToast('Please connect your Metamask');
-      return;
-    }
-
-    if (
-      network !== null &&
-      network.chainId !== parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!)
-    ) {
-      showErrorToast('Please change your metamask network to Polygon!');
+    if (account === null) {
+      showErrorToast('Please connect your Trezor Account!');
       return;
     }
 
@@ -173,13 +166,13 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       return;
     }
 
-    if (accounts[0] !== contractOwner) {
+    if (account !== contractOwner) {
       showErrorToast('You are not the contract owner!');
       return;
     }
 
     setIsModalOpen((prevState) => !prevState);
-  }, [accounts, contractOwner, network]);
+  }, [account, contractOwner]);
 
   useImperativeHandle(ref, () => ({
     toggleModal,
