@@ -12,7 +12,7 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
   });
 
   const fps = 30;
-  const scale = 300;
+  const scale = 500;
 
   await ffmpeg.writeFile('video.mp4', await fetchFile(video));
 

@@ -44,6 +44,17 @@ export default function Home() {
           network !== null &&
           network.chainId ===
             parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!) &&
+          nfts.length === 0 && (
+            <div className={'h-96 flex flex-col justify-center text-lg'}>
+              No NFT Data
+            </div>
+          )}
+
+        {!isLoading &&
+          accounts.length !== 0 &&
+          network !== null &&
+          network.chainId ===
+            parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!) &&
           nfts.map((nft, index) => {
             return (
               <NftCardComponent
