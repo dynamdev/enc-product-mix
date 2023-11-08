@@ -42,11 +42,6 @@ export const MetamaskContext = createContext<{
   connect: () => Promise<void>;
   disconnect: () => void;
   getAccounts: () => Promise<string[]>;
-  sendTransaction: (
-    from: string,
-    to: string,
-    valueInEther: string,
-  ) => Promise<any>;
 } | null>(null);
 
 export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
@@ -169,22 +164,6 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     return accounts;
   };
 
-  const sendTransaction = async (
-    from: string,
-    to: string,
-    valueInEther: string,
-  ) => {
-    const provider = setupProvider();
-    const params = [
-      {
-        from,
-        to,
-        value: parseUnits(valueInEther, 'ether').toString(16),
-      },
-    ];
-    return await provider.send('eth_sendTransaction', params);
-  };
-
   return (
     <MetamaskContext.Provider
       value={{
@@ -194,7 +173,6 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
         connect,
         disconnect,
         getAccounts,
-        sendTransaction,
       }}
     >
       {children}

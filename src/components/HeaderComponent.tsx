@@ -1,4 +1,4 @@
-import { ButtonMetamaskComponent } from '@/components/ButtonMetamaskComponent';
+import { ButtonTrezorComponent } from '@/components/ButtonTrezorComponent';
 
 export const HeaderComponent = () => {
   return (
@@ -7,7 +7,7 @@ export const HeaderComponent = () => {
         <div className="normal-case text-xl px-4 font-bold">
           Enchantmint Product Mix
         </div>
-        <ButtonMetamaskComponent />
+        <ButtonTrezorComponent />
       </div>
     </>
   );

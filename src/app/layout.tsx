@@ -5,6 +5,7 @@ import 'react-notifications-component/dist/theme.css';
 import { NftProvider } from '@/context/NftContext';
 import { MetamaskContext, MetamaskProvider } from '@/context/MetamaskContext';
 import { SmartContractProvider } from '@/context/SmartContractContext';
+import { TrezorProvider } from '@/context/TrezorContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,11 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <MetamaskProvider>
-          <SmartContractProvider>
-            <NftProvider>{children}</NftProvider>
-          </SmartContractProvider>
-        </MetamaskProvider>
+        <TrezorProvider>
+          <MetamaskProvider>
+            <SmartContractProvider>
+              <NftProvider>{children}</NftProvider>
+            </SmartContractProvider>
+          </MetamaskProvider>
+        </TrezorProvider>
       </body>
     </html>
   );
