@@ -27,7 +27,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   {}
 >(({}, ref) => {
   const { addNft } = useNft();
-  const { account } = useTrezor();
+  const { account, getCrustCloudW3AuthToken } = useTrezor();
   const { contractOwner } = useSmartContract();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
@@ -92,6 +92,10 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
 
     const isFormValid = refFrom.current.checkValidity();
     if (!isFormValid) {
+      const token = await getCrustCloudW3AuthToken();
+
+      console.log(token);
+
       Store.addNotification({
         type: 'danger',
         message: 'Please fill out all required fields before submitting.',
