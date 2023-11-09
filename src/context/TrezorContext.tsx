@@ -5,6 +5,8 @@ import { ethers, JsonRpcProvider } from 'ethers';
 import TrezorConnect, {
   EthereumSignTypedDataMessage,
 } from '@trezor/connect-web';
+import { transformTypedData } from '@trezor/connect-plugin-ethereum';
+import { TypedMessage } from '@metamask/eth-sig-util';
 
 export const TrezorContext = createContext<{
   account: string | null;
@@ -75,7 +77,7 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
     const currentTime = Date.now();
     const timeIn30Minutes = currentTime + 30 * 60 * 1000;
 
-    const typedDataMessage: EthereumSignTypedDataMessage<any> = {
+    const typedDataMessage: TypedMessage<any> = {
       domain: {
         name: 'cloud3.cc',
         version: '1',
@@ -103,21 +105,24 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
       },
     };
 
+    console.log(typedDataMessage);
+
+    const { domain_separator_hash, message_hash } = transformTypedData(
+      typedDataMessage,
+      true,
+    );
+
+    console.log([domain_separator_hash, message_hash]);
+
     const result = await TrezorConnect.ethereumSignTypedData({
       path: "m/44'/60'/0'/0/0",
       data: typedDataMessage,
       metamask_v4_compat: true,
-      domain_separator_hash: ethers.TypedDataEncoder.hashDomain(
-        typedDataMessage.domain as any,
-      ),
-      message_hash: ethers.keccak256(
-        ethers.TypedDataEncoder.encode(
-          typedDataMessage.domain as any,
-          typedDataMessage.types,
-          typedDataMessage.message,
-        ),
-      ),
+      domain_separator_hash: domain_separator_hash,
+      message_hash: message_hash!,
     });
+
+    console.log(result);
 
     if (result.success) {
       // Generate Bearer Token
@@ -125,6 +130,20 @@ export const TrezorProvider: FunctionComponent<{ children: ReactNode }> = ({
         data: typedDataMessage,
         signature: result.payload.signature,
       };
+
+      const hash = ethers.TypedDataEncoder.hash(
+        typedDataMessage.domain as any,
+        typedDataMessage.types,
+        typedDataMessage.message,
+      );
+      console.log('hash', hash);
+      const recoverAddress = ethers.recoverAddress(
+        hash,
+        result.payload.signature,
+      );
+      console.log('recoverAddress', recoverAddress);
+      console.log('account', account);
+      console.log(`signature valid: ${recoverAddress == account}`);
 
       return Buffer.from(JSON.stringify(bearerTokenData)).toString('base64');
     } else {

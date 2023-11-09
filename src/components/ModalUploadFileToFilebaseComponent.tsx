@@ -101,6 +101,9 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   const onUploadToIpfs = async () => {
     if (refFrom.current === null) return;
 
+    // await getCrustCloudW3AuthToken();
+    // return;
+
     const isFormValid = refFrom.current.checkValidity();
     if (!isFormValid) {
       Store.addNotification({

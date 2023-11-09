@@ -18,6 +18,7 @@
     "@polkadot/api": "^10.10.1",
     "@polkadot/keyring": "^12.5.1",
     "@trezor/connect": "^9.1.5",
+    "@trezor/connect-plugin-ethereum": "^9.0.2",
     "@trezor/connect-web": "^9.1.5",
     "autoprefixer": "10.4.15",
     "aws-crt": "^1.18.0",
