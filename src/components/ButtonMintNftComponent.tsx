@@ -16,6 +16,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   const { account, signer } = useMetamask();
   const { getContact, getContractOwner } = useSmartContract();
 
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [mintDate, setMintDate] = useState<Date | null>(null);
@@ -27,8 +28,9 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       return;
     }
 
-    const contract = getContact();
-    const contractOwner = await getContractOwner();
+    const contract = await getContact();
+    const contractOwner =
+      contract !== null ? await getContractOwner(contract) : null;
 
     if (contractOwner === null) {
       setIsLoading(true);
@@ -65,8 +67,11 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   }, [account, getContact, getContractOwner, signer, videoCid]);
 
   useEffect(() => {
-    initialize().then();
-  }, [initialize]);
+    if (!isLoaded) {
+      initialize().then();
+      setIsLoaded(true);
+    }
+  }, [initialize, isLoaded]);
 
   const getNftTokenId = useCallback(
     async (txHash: string): Promise<number | null> => {
@@ -75,9 +80,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       while (true) {
         const txReceipt = await signer.provider.getTransactionReceipt(txHash);
 
-        console.log(txReceipt);
-
-        if (txReceipt === null) {
+        if (txReceipt === null || txReceipt.confirmations >= 10) {
           await delay(500);
           continue;
         }
@@ -101,16 +104,17 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   const onClickMint = useCallback(async () => {
     if (account === null) return;
 
-    const contract = getContact();
-    const contractOwner = await getContractOwner();
+    const contract = await getContact();
+    const contractOwner =
+      contract === null ? null : await getContractOwner(contract);
 
-    if (account !== contractOwner) return;
     if (contract === null) return;
+    if (account !== contractOwner) return;
 
     setIsLoading(true);
     setLoadingMessage('Minting...');
 
-    const contractResponse = await contract
+    await contract
       .safeMint(
         videoCid,
         process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + jsonCid,
