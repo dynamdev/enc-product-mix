@@ -21,26 +21,12 @@ declare global {
   }
 }
 
-type ExtensionForProvider = {
-  on: (event: string, callback: (...params: any) => void) => void;
-};
-
-// Adds on stream support for listening events.
-// see https://github.com/ethers-io/ethers.js/discussions/3230
-type GenericProvider = ExternalProvider & ExtensionForProvider;
-
-interface ProviderRpcError extends Error {
-  message: string;
-  code: number;
-  data?: unknown;
-}
-
 export const MetamaskContext = createContext<{
   signer: JsonRpcSigner | null;
   account: string | null;
-  network: Network | null;
   connect: () => Promise<void>;
   disconnect: () => void;
+  switchNetwork: (chainId: number) => Promise<JsonRpcSigner | null>;
 } | null>(null);
 
 export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
@@ -48,7 +34,6 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
 }) => {
   const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
   const [account, setAccount] = useState<string | null>(null);
-  const [network, setNetwork] = useState<Network | null>(null);
 
   const setupProvider = () => {
     if (!window.ethereum) throw Error('Could not find Metamask extension');
@@ -60,10 +45,7 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     });
 
     newProvider.on('chainChanged', async (net: number) => {
-      // console.log('chainChanged ' + net);
-      // const network = await provider.detectNetwork();
-      // console.log(network);
-      // setNetwork(network);
+      await switchNetwork(net);
     });
 
     newProvider.on('disconnect', (_) => {
@@ -74,43 +56,8 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
   };
 
   const connect = async () => {
-    const POLYGON_CHAIN_ID = parseInt(
-      process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!,
-    );
-
-    const POLYGON_CHAIN_ID_HEX = '0x' + POLYGON_CHAIN_ID.toString(16);
-
     let provider = setupProvider();
-    let network: Network = await provider.getNetwork();
     let checksumAccounts: string[] = [];
-
-    // If not on Polygon, prompt the user to switch
-    if (network.chainId !== POLYGON_CHAIN_ID) {
-      try {
-        await provider.send('wallet_switchEthereumChain', [
-          {
-            chainId: POLYGON_CHAIN_ID_HEX,
-          },
-        ]);
-
-        provider = setupProvider();
-        network = await provider.getNetwork();
-      } catch (error) {
-        const switchError = error as {
-          code: number;
-          data?: any;
-        };
-
-        // This error code indicates that the requested chain is not added by the user in MetaMask.
-        if (switchError.code === 4902) {
-          throw new Error(
-            'Please add the Polygon network to MetaMask and then connect.',
-          );
-        } else {
-          throw switchError;
-        }
-      }
-    }
 
     try {
       const requestedAccounts: string[] = await provider.send(
@@ -124,16 +71,56 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
 
     if (checksumAccounts.length === 0) return;
 
-    setNetwork(network);
     setAccount(checksumAccounts[0]);
     setSigner(provider.getSigner());
+  };
+
+  const switchNetwork = async (
+    chainId: number,
+  ): Promise<JsonRpcSigner | null> => {
+    if (signer === null) return null;
+
+    const chainIdHex = '0x' + chainId.toString(16);
+
+    const network = await signer.provider.detectNetwork();
+
+    // If not on Polygon, prompt the user to switch
+    if (network.chainId !== chainId) {
+      try {
+        await signer.provider.send('wallet_switchEthereumChain', [
+          {
+            chainId: chainIdHex,
+          },
+        ]);
+
+        const provider = setupProvider();
+        const newSigner = provider.getSigner();
+
+        setSigner(newSigner);
+
+        return newSigner;
+      } catch (error) {
+        const switchError = error as {
+          code: number;
+          data?: any;
+        };
+
+        // This error code indicates that the requested chain is not added by the user in MetaMask.
+        if (switchError.code === 4902) {
+          throw new Error('Please add the Polygon network to MetaMask!.');
+        } else {
+          throw switchError;
+        }
+      }
+    }
+
+    return signer;
   };
 
   const disconnect = () => {
     signer?.provider.removeAllListeners();
     setSigner(null);
     setAccount(null);
-    setNetwork(null);
   };
 
   return (
@@ -141,9 +128,9 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
       value={{
         signer,
         account,
-        network,
         connect,
         disconnect,
+        switchNetwork,
       }}
     >
       {children}

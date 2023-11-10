@@ -3,9 +3,7 @@ import { useMetamask } from '@/hooks/useMetamask';
 import { useSmartContract } from '@/hooks/useSmartContract';
 import { getSmartContractCleanErrorMessage } from '@/helper/smartContractHelper';
 import { showErrorToast } from '@/helper/toastHelper';
-import axios from 'axios';
 import { delay } from '@/helper/commonHelper';
-import { Interface, ZeroAddress } from 'ethers';
 
 interface ButtonMintNftComponentProps {
   jsonCid: string;
@@ -15,19 +13,22 @@ interface ButtonMintNftComponentProps {
 export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   const { jsonCid, videoCid } = props;
 
-  const { accounts, signer } = useMetamask();
-  const { contract, contractOwner } = useSmartContract();
+  const { account, signer } = useMetamask();
+  const { getContact, getContractOwner } = useSmartContract();
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [mintDate, setMintDate] = useState<Date | null>(null);
 
-  useEffect(() => {
-    if (accounts.length === 0) {
+  const initialize = useCallback(async () => {
+    if (account === null || signer === null) {
       setIsLoading(true);
       setLoadingMessage('Please connect your Metamask');
       return;
     }
+
+    const contract = getContact();
+    const contractOwner = await getContractOwner();
 
     if (contractOwner === null) {
       setIsLoading(true);
@@ -35,7 +36,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       return;
     }
 
-    if (accounts[0] !== contractOwner) {
+    if (account !== contractOwner) {
       setIsLoading(true);
       setLoadingMessage('You are not the contract owner!');
       return;
@@ -61,7 +62,11 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [accounts, accounts.length, contract, contractOwner, videoCid]);
+  }, [account, getContact, getContractOwner, signer, videoCid]);
+
+  useEffect(() => {
+    initialize().then();
+  }, [initialize]);
 
   const getNftTokenId = useCallback(
     async (txHash: string): Promise<number | null> => {
@@ -93,15 +98,19 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
     [signer],
   );
 
-  const onClickMint = useCallback(() => {
-    if (accounts.length === 0) return;
-    if (accounts[0] !== contractOwner) return;
+  const onClickMint = useCallback(async () => {
+    if (account === null) return;
+
+    const contract = getContact();
+    const contractOwner = await getContractOwner();
+
+    if (account !== contractOwner) return;
     if (contract === null) return;
 
     setIsLoading(true);
     setLoadingMessage('Minting...');
 
-    contract
+    const contractResponse = await contract
       .safeMint(
         videoCid,
         process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + jsonCid,
@@ -139,7 +148,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         showErrorToast(getSmartContractCleanErrorMessage(error));
         setIsLoading(false);
       });
-  }, [accounts, contract, contractOwner, getNftTokenId, jsonCid, videoCid]);
+  }, [account, getContact, getContractOwner, getNftTokenId, jsonCid, videoCid]);
 
   return (
     <>
@@ -157,7 +166,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         <button
           className={'btn btn-primary text-primary-content mx-auto w-full'}
           onClick={() => {
-            onClickMint();
+            onClickMint().then();
           }}
         >
           Mint

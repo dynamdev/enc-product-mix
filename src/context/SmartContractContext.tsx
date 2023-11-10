@@ -4,6 +4,7 @@ import {
   createContext,
   FunctionComponent,
   ReactNode,
+  useCallback,
   useEffect,
   useState,
 } from 'react';
@@ -13,55 +14,40 @@ import { useMetamask } from '@/hooks/useMetamask';
 import { useTrezor } from '@/hooks/useTrezor';
 
 export const SmartContractContext = createContext<{
-  contract: ethers.Contract | null;
-  contractOwner: string | null;
+  getContact: () => ethers.Contract | null;
+  getContractOwner: () => Promise<string | null>;
 } | null>(null);
 
 export const SmartContractProvider: FunctionComponent<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { signer } = useMetamask();
+  const { switchNetwork } = useMetamask();
 
-  const [contract, setContract] = useState<ethers.Contract | null>(null);
-  const [contractOwner, setContractOwner] = useState<string | null>(null);
+  const getContact = useCallback(() => {
+    const polygonChainId = parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!);
+    const signer = switchNetwork(polygonChainId);
 
-  useEffect(() => {
-    if (signer === null) {
-      setContract(null);
-      return;
-    }
+    if (signer === null) return null;
 
-    setContract(
-      new ethers.Contract(
-        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-        enchantmintProductMixNftAbi,
-        signer as any,
-      ),
+    return new ethers.Contract(
+      process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+      enchantmintProductMixNftAbi,
+      signer as any,
     );
-  }, [signer]);
+  }, [switchNetwork]);
 
-  useEffect(() => {
-    if (contract === null) {
-      setContractOwner(null);
-      return;
-    }
+  const getContractOwner = useCallback(async () => {
+    const contract = getContact();
+    if (contract === null) return null;
 
-    contract
-      .owner()
-      .then((result) => {
-        setContractOwner(result);
-      })
-      .catch(() => {
-        setContractOwner(null);
-      })
-      .finally(() => {});
-  }, [contract]);
+    return await contract.owner();
+  }, [getContact]);
 
   return (
     <SmartContractContext.Provider
       value={{
-        contract,
-        contractOwner,
+        getContact,
+        getContractOwner,
       }}
     >
       {children}
