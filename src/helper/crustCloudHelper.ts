@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { IIpfs } from '@/interfaces/IIpfs';
+import { JsonRpcSigner } from '@ethersproject/providers';
 
 export const uploadToCrustCloudGateway = async (
   bearerToken: string,
@@ -63,4 +64,51 @@ export const pinToCrustCloud = async (
   } catch (e) {
     return false;
   }
+};
+export const generateW3AuthToken = async (
+  account: string,
+  signer: JsonRpcSigner,
+): Promise<string> => {
+  const typedData = {
+    domain: {
+      chainId: '1',
+      name: 'cloud3.cc',
+      verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+      version: '1',
+    },
+    message: {
+      description: 'Sign for W3 Bucket Access Authentication',
+      signingAddress: account,
+      tokenAddress: process.env.CRUST_CLOUD_NFT_TOKEN_ADDRESS,
+      tokenId: process.env.CRUST_CLOUD_NFT_TOKEN_ID,
+      effectiveTimestamp: (Date.now() / 1000) | 0,
+      expirationTimestamp: 0,
+    },
+    primaryType: 'W3Bucket',
+    types: {
+      W3Bucket: [
+        { name: 'description', type: 'string' },
+        { name: 'signingAddress', type: 'address' },
+        { name: 'tokenAddress', type: 'address' },
+        { name: 'tokenId', type: 'string' },
+        { name: 'effectiveTimestamp', type: 'uint256' },
+        { name: 'expirationTimestamp', type: 'uint256' },
+      ],
+    },
+  };
+
+  // Sign
+  const signature = await signer._signTypedData(
+    typedData.domain,
+    typedData.types,
+    typedData.message,
+  );
+
+  // Generate Bearer Token
+  const bearerTokenData = {
+    data: typedData,
+    signature: signature,
+  };
+
+  return Buffer.from(JSON.stringify(bearerTokenData)).toString('base64');
 };
