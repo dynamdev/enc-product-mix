@@ -22,7 +22,7 @@ export const NftContext = createContext<{
 export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { contract } = useSmartContract();
+  const { getContact } = useSmartContract();
 
   const [nfts, setNfts] = useState<INft[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +37,8 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   const getContractMetadataUris = useCallback(async (): Promise<
     { tokenId: number; uri: string }[]
   > => {
+    const contract = await getContact();
+
     if (contract === null) return [];
 
     const totalSupply = await contract.totalSupply();
@@ -56,7 +58,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     }
 
     return contractMetadataUris;
-  }, [contract]);
+  }, [getContact]);
 
   const loadMetadata = async (
     tokenId: number,
@@ -153,7 +155,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
 
   useEffect(() => {
     initializeNfts().then();
-  }, [initializeNfts, contract]);
+  }, [initializeNfts]);
 
   return (
     <NftContext.Provider

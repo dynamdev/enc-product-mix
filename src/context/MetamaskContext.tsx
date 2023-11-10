@@ -4,6 +4,7 @@ import {
   createContext,
   FunctionComponent,
   ReactNode,
+  useCallback,
   useEffect,
   useState,
 } from 'react';
@@ -75,47 +76,48 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     setSigner(provider.getSigner());
   };
 
-  const switchNetwork = async (
-    chainId: number,
-  ): Promise<JsonRpcSigner | null> => {
-    if (signer === null) return null;
+  const switchNetwork = useCallback(
+    async (chainId: number): Promise<JsonRpcSigner | null> => {
+      if (signer === null) return null;
 
-    const chainIdHex = '0x' + chainId.toString(16);
+      const chainIdHex = '0x' + chainId.toString(16);
 
-    const network = await signer.provider.detectNetwork();
+      const network = await signer.provider.detectNetwork();
 
-    // If not on Polygon, prompt the user to switch
-    if (network.chainId !== chainId) {
-      try {
-        await signer.provider.send('wallet_switchEthereumChain', [
-          {
-            chainId: chainIdHex,
-          },
-        ]);
+      // If not on Polygon, prompt the user to switch
+      if (network.chainId !== chainId) {
+        try {
+          await signer.provider.send('wallet_switchEthereumChain', [
+            {
+              chainId: chainIdHex,
+            },
+          ]);
 
-        const provider = setupProvider();
-        const newSigner = provider.getSigner();
+          const provider = setupProvider();
+          const newSigner = provider.getSigner();
 
-        setSigner(newSigner);
+          setSigner(newSigner);
 
-        return newSigner;
-      } catch (error) {
-        const switchError = error as {
-          code: number;
-          data?: any;
-        };
+          return newSigner;
+        } catch (error) {
+          const switchError = error as {
+            code: number;
+            data?: any;
+          };
 
-        // This error code indicates that the requested chain is not added by the user in MetaMask.
-        if (switchError.code === 4902) {
-          throw new Error('Please add the Polygon network to MetaMask!.');
-        } else {
-          throw switchError;
+          // This error code indicates that the requested chain is not added by the user in MetaMask.
+          if (switchError.code === 4902) {
+            throw new Error('Please add the Polygon network to MetaMask!.');
+          } else {
+            throw switchError;
+          }
         }
       }
-    }
 
-    return signer;
-  };
+      return signer;
+    },
+    [setupProvider, signer],
+  );
 
   const disconnect = () => {
     signer?.provider.removeAllListeners();

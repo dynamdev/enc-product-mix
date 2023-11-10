@@ -14,8 +14,8 @@ import { useMetamask } from '@/hooks/useMetamask';
 import { useTrezor } from '@/hooks/useTrezor';
 
 export const SmartContractContext = createContext<{
-  getContact: () => ethers.Contract | null;
-  getContractOwner: () => Promise<string | null>;
+  getContact: () => Promise<ethers.Contract | null>;
+  getContractOwner: (contract: ethers.Contract) => Promise<string>;
 } | null>(null);
 
 export const SmartContractProvider: FunctionComponent<{
@@ -23,9 +23,9 @@ export const SmartContractProvider: FunctionComponent<{
 }> = ({ children }) => {
   const { switchNetwork } = useMetamask();
 
-  const getContact = useCallback(() => {
+  const getContact = useCallback(async () => {
     const polygonChainId = parseInt(process.env.NEXT_PUBLIC_CONTRACT_CHAIN_ID!);
-    const signer = switchNetwork(polygonChainId);
+    const signer = await switchNetwork(polygonChainId);
 
     if (signer === null) return null;
 
@@ -36,12 +36,9 @@ export const SmartContractProvider: FunctionComponent<{
     );
   }, [switchNetwork]);
 
-  const getContractOwner = useCallback(async () => {
-    const contract = getContact();
-    if (contract === null) return null;
-
+  const getContractOwner = useCallback(async (contract: ethers.Contract) => {
     return await contract.owner();
-  }, [getContact]);
+  }, []);
 
   return (
     <SmartContractContext.Provider
