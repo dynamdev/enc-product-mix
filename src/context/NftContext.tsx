@@ -12,6 +12,7 @@ import axios from 'axios';
 import { useSmartContract } from '@/hooks/useSmartContract';
 import { INft } from '@/interfaces/INft';
 import { getIpfsCidFromUrl } from '@/helper/ipfsHelper';
+import { useMetamask } from '@/hooks/useMetamask';
 
 export const NftContext = createContext<{
   nfts: INft[];
@@ -23,7 +24,9 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
   const { getContact } = useSmartContract();
+  const { account } = useMetamask();
 
+  const [isInitialyLoaded, setIsinitialyLoaded] = useState(false);
   const [nfts, setNfts] = useState<INft[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -152,6 +155,13 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       setNfts((nfts) => [newNft, ...nfts]);
     });
   };
+
+  useEffect(() => {
+    if (account !== null && !isInitialyLoaded) {
+      initializeNfts().then();
+      setIsinitialyLoaded(true);
+    }
+  }, [account, initializeNfts, isInitialyLoaded]);
 
   return (
     <NftContext.Provider

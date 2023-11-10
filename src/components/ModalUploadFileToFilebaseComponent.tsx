@@ -107,16 +107,16 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       return;
     }
 
+    const isFormValid = refFrom.current.checkValidity();
+    if (!isFormValid) {
+      showErrorToast('Please fill out all required fields before submitting.');
+      return;
+    }
+
     const signer = await switchNetwork(1);
 
     if (signer === null) {
       showErrorToast('Please connect your metamask account.');
-      return;
-    }
-
-    const isFormValid = refFrom.current.checkValidity();
-    if (!isFormValid) {
-      showErrorToast('Please fill out all required fields before submitting.');
       return;
     }
 
