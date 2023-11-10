@@ -1,25 +1,10 @@
 'use client';
 
 import { useMetamask } from '@/hooks/useMetamask';
+import { formatDisplayAddress } from '@/helper/metamaskHelper';
 
 export const ButtonMetamaskComponent = () => {
-  const { accounts, connect, disconnect } = useMetamask();
-
-  const formatAddress = (str: string) => {
-    // Ensure the string has at least 6 characters
-    if (str.length < 6) {
-      return str;
-    }
-
-    // Get the first two characters
-    const start = str.substring(0, 2);
-
-    // Get the last four characters
-    const end = str.substring(str.length - 4);
-
-    // Combine the parts
-    return start + '...' + end;
-  };
+  const { account, connect, disconnect } = useMetamask();
 
   return (
     <>
@@ -27,7 +12,7 @@ export const ButtonMetamaskComponent = () => {
         type="button"
         className="btn bg-white my-auto mx-4"
         onClick={() => {
-          if (accounts.length === 0) {
+          if (account === null) {
             connect().then(() => {});
             return;
           }
@@ -475,8 +460,8 @@ export const ButtonMetamaskComponent = () => {
             </clipPath>{' '}
           </defs>{' '}
         </svg>
-        {accounts.length === 0 && 'Connect with MetaMask'}
-        {accounts.length !== 0 && 'Connected: ' + formatAddress(accounts[0])}
+        {account === null && 'Connect with MetaMask'}
+        {account !== null && 'Connected: ' + formatDisplayAddress(account)}
       </button>
     </>
   );

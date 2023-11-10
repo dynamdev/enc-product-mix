@@ -10,7 +10,7 @@ import { useTrezor } from '@/hooks/useTrezor';
 
 export default function Home() {
   const { nfts, isLoading } = useNft();
-  const { account } = useTrezor();
+  const { account } = useMetamask();
 
   return (
     <>

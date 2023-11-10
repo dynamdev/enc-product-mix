@@ -37,56 +37,40 @@ interface ProviderRpcError extends Error {
 
 export const MetamaskContext = createContext<{
   signer: JsonRpcSigner | null;
-  accounts: string[];
+  account: string | null;
   network: Network | null;
   connect: () => Promise<void>;
   disconnect: () => void;
-  getAccounts: () => Promise<string[]>;
 } | null>(null);
 
 export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [provider, setProvider] = useState<Web3Provider | null>(null);
   const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
-  const [accounts, setAccounts] = useState<string[]>([]);
+  const [account, setAccount] = useState<string | null>(null);
   const [network, setNetwork] = useState<Network | null>(null);
 
   const setupProvider = () => {
     if (!window.ethereum) throw Error('Could not find Metamask extension');
-    if (provider) return provider;
 
     const newProvider = new Web3Provider(window.ethereum);
-    listenToEvents(newProvider);
-    setProvider(newProvider);
+
+    newProvider.on('accountsChanged', (acc: string[]) => {
+      setAccount(acc[0]);
+    });
+
+    newProvider.on('chainChanged', async (net: number) => {
+      // console.log('chainChanged ' + net);
+      // const network = await provider.detectNetwork();
+      // console.log(network);
+      // setNetwork(network);
+    });
+
+    newProvider.on('disconnect', (_) => {
+      disconnect();
+    });
 
     return newProvider;
-  };
-
-  const listenToEvents = (provider: Web3Provider) => {
-    (window.ethereum as GenericProvider).on(
-      'accountsChanged',
-      (acc: string[]) => {
-        setAccounts(acc);
-      },
-    );
-
-    (window.ethereum as GenericProvider).on(
-      'chainChanged',
-      async (net: number) => {
-        // console.log('chainChanged ' + net);
-        // const network = await provider.detectNetwork();
-        // console.log(network);
-        // setNetwork(network);
-      },
-    );
-
-    (window.ethereum as GenericProvider).on(
-      'disconnect',
-      (error: ProviderRpcError) => {
-        //throw Error(error.message);
-      },
-    );
   };
 
   const connect = async () => {
@@ -141,38 +125,25 @@ export const MetamaskProvider: FunctionComponent<{ children: ReactNode }> = ({
     if (checksumAccounts.length === 0) return;
 
     setNetwork(network);
-    setAccounts(checksumAccounts);
+    setAccount(checksumAccounts[0]);
     setSigner(provider.getSigner());
   };
 
   const disconnect = () => {
-    if (provider) {
-      provider.removeAllListeners();
-    }
-
-    // Reset state
-    setProvider(null);
+    signer?.provider.removeAllListeners();
     setSigner(null);
-    setAccounts([]);
+    setAccount(null);
     setNetwork(null);
-  };
-
-  const getAccounts = async () => {
-    const provider = setupProvider();
-    const accounts: string[] = await provider.send('eth_accounts', []);
-    setAccounts(accounts);
-    return accounts;
   };
 
   return (
     <MetamaskContext.Provider
       value={{
         signer,
-        accounts,
+        account,
         network,
         connect,
         disconnect,
-        getAccounts,
       }}
     >
       {children}
