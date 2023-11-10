@@ -153,10 +153,6 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     });
   };
 
-  useEffect(() => {
-    initializeNfts().then();
-  }, [initializeNfts]);
-
   return (
     <NftContext.Provider
       value={{

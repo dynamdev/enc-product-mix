@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { IIpfs } from '@/interfaces/IIpfs';
 import { JsonRpcSigner } from '@ethersproject/providers';
+import { ethers } from 'ethers';
 
 export const uploadToCrustCloudGateway = async (
   bearerToken: string,
@@ -68,7 +69,10 @@ export const pinToCrustCloud = async (
 export const generateW3AuthToken = async (
   account: string,
   signer: JsonRpcSigner,
-): Promise<string> => {
+): Promise<string | null> => {
+  const currentTime = (Date.now() / 1000) | 0;
+  const timeIn30Minutes = ((Date.now() + 30 * 60 * 1000) / 1000) | 0;
+
   const typedData = {
     domain: {
       chainId: '1',
@@ -79,10 +83,10 @@ export const generateW3AuthToken = async (
     message: {
       description: 'Sign for W3 Bucket Access Authentication',
       signingAddress: account,
-      tokenAddress: process.env.CRUST_CLOUD_NFT_TOKEN_ADDRESS,
-      tokenId: process.env.CRUST_CLOUD_NFT_TOKEN_ID,
-      effectiveTimestamp: (Date.now() / 1000) | 0,
-      expirationTimestamp: 0,
+      tokenAddress: process.env.NEXT_PUBLIC_CRUST_CLOUD_NFT_TOKEN_ADDRESS,
+      tokenId: process.env.NEXT_PUBLIC_CRUST_CLOUD_NFT_TOKEN_ID,
+      effectiveTimestamp: currentTime,
+      expirationTimestamp: timeIn30Minutes,
     },
     primaryType: 'W3Bucket',
     types: {
@@ -97,18 +101,22 @@ export const generateW3AuthToken = async (
     },
   };
 
-  // Sign
-  const signature = await signer._signTypedData(
-    typedData.domain,
-    typedData.types,
-    typedData.message,
-  );
+  try {
+    // Sign
+    const signature = await signer._signTypedData(
+      typedData.domain,
+      typedData.types,
+      typedData.message,
+    );
 
-  // Generate Bearer Token
-  const bearerTokenData = {
-    data: typedData,
-    signature: signature,
-  };
+    // Generate Bearer Token
+    const bearerTokenData = {
+      data: typedData,
+      signature: signature,
+    };
 
-  return Buffer.from(JSON.stringify(bearerTokenData)).toString('base64');
+    return Buffer.from(JSON.stringify(bearerTokenData)).toString('base64');
+  } catch (_) {
+    return null;
+  }
 };

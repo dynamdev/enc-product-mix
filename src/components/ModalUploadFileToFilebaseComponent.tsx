@@ -17,6 +17,7 @@ import { IIpfs } from '@/interfaces/IIpfs';
 import { removeExtension } from '@/helper/fileHelper';
 import { useTrezor } from '@/hooks/useTrezor';
 import {
+  generateW3AuthToken,
   pinToCrustCloud,
   uploadToCrustCloudGateway,
 } from '@/helper/crustCloudHelper';
@@ -31,8 +32,8 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   {}
 >(({}, ref) => {
   const { addNft } = useNft();
-  const { account, getCrustCloudW3AuthToken } = useTrezor();
-  const { contractOwner } = useSmartContract();
+  const { account, switchNetwork } = useMetamask();
+  const { getContractOwner, getContact } = useSmartContract();
 
   const refFrom = useRef<HTMLFormElement | null>(null);
 
@@ -101,25 +102,25 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   const onUploadToIpfs = async () => {
     if (refFrom.current === null) return;
 
-    // await getCrustCloudW3AuthToken();
-    // return;
-
-    const isFormValid = refFrom.current.checkValidity();
-    if (!isFormValid) {
-      Store.addNotification({
-        type: 'danger',
-        message: 'Please fill out all required fields before submitting.',
-        container: 'top-right',
-        dismiss: {
-          duration: 3000,
-          onScreen: true,
-          showIcon: true,
-        },
-      });
+    if (account === null) {
+      showErrorToast('Please connect your metamask account.');
       return;
     }
 
-    const w3AuthToken = await getCrustCloudW3AuthToken();
+    const signer = await switchNetwork(1);
+
+    if (signer === null) {
+      showErrorToast('Please connect your metamask account.');
+      return;
+    }
+
+    const isFormValid = refFrom.current.checkValidity();
+    if (!isFormValid) {
+      showErrorToast('Please fill out all required fields before submitting.');
+      return;
+    }
+
+    const w3AuthToken = await generateW3AuthToken(account, signer);
 
     if (w3AuthToken === null) {
       Store.addNotification({
@@ -188,11 +189,15 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     setIsModalOpen(false);
   };
 
-  const toggleModal = useCallback(() => {
+  const toggleModal = useCallback(async () => {
     if (account === null) {
-      showErrorToast('Please connect your Trezor Account!');
+      showErrorToast('Please connect your Metamask Account!');
       return;
     }
+
+    const contract = await getContact();
+    const contractOwner =
+      contract === null ? null : await getContractOwner(contract);
 
     if (contractOwner === null) {
       showErrorToast('Checking the owner of the contract!');
@@ -205,10 +210,12 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     }
 
     setIsModalOpen((prevState) => !prevState);
-  }, [account, contractOwner]);
+  }, [account, getContact, getContractOwner]);
 
   useImperativeHandle(ref, () => ({
-    toggleModal,
+    toggleModal: () => {
+      toggleModal().then();
+    },
   }));
 
   return (
