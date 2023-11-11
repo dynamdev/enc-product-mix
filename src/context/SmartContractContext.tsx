@@ -5,13 +5,10 @@ import {
   FunctionComponent,
   ReactNode,
   useCallback,
-  useEffect,
-  useState,
 } from 'react';
-import { ContractRunner, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { useMetamask } from '@/hooks/useMetamask';
-import { useTrezor } from '@/hooks/useTrezor';
 
 export const SmartContractContext = createContext<{
   getContact: () => Promise<ethers.Contract | null>;

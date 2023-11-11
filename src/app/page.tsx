@@ -6,7 +6,6 @@ import { FabUploadToFilebaseComponent } from '@/components/FabUploadToFilebaseCo
 import { useNft } from '@/hooks/useNft';
 import { ReactNotifications } from 'react-notifications-component';
 import { useMetamask } from '@/hooks/useMetamask';
-import { useTrezor } from '@/hooks/useTrezor';
 
 export default function Home() {
   const { unmintedNfts, mintedNfts, isLoading } = useNft();

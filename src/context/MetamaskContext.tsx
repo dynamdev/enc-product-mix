@@ -5,13 +5,11 @@ import {
   FunctionComponent,
   ReactNode,
   useCallback,
-  useEffect,
   useState,
 } from 'react';
 import {
   ExternalProvider,
   JsonRpcSigner,
-  Network,
   Web3Provider,
 } from '@ethersproject/providers';
 import { getAddress, parseUnits } from 'ethers';

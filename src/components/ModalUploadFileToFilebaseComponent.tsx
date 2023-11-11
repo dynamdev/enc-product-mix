@@ -15,7 +15,6 @@ import { useSmartContract } from '@/hooks/useSmartContract';
 import { showErrorToast } from '@/helper/toastHelper';
 import { IIpfs } from '@/interfaces/IIpfs';
 import { removeExtension } from '@/helper/fileHelper';
-import { useTrezor } from '@/hooks/useTrezor';
 import {
   generateW3AuthToken,
   pinToCrustCloud,

@@ -1,4 +1,3 @@
-import { ButtonTrezorComponent } from '@/components/ButtonTrezorComponent';
 import { ButtonMetamaskComponent } from '@/components/ButtonMetamaskComponent';
 
 export const HeaderComponent = () => {
