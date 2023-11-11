@@ -117,6 +117,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
             className={'btn btn-primary text-primary-content mx-auto w-full'}
             disabled={true}
           >
+            <span className="loading loading-spinner"></span>
             {loadingMessage}
           </button>
         </>
