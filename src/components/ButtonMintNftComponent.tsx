@@ -67,6 +67,10 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
   }, [account, getContact, getContractOwner, signer, videoCid]);
 
   useEffect(() => {
+    setIsLoaded(false);
+  }, [jsonCid]);
+
+  useEffect(() => {
     if (!isLoaded) {
       initialize().then();
       setIsLoaded(true);
@@ -80,7 +84,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
       while (true) {
         const txReceipt = await signer.provider.getTransactionReceipt(txHash);
 
-        if (txReceipt === null || txReceipt.confirmations >= 10) {
+        if (txReceipt === null || txReceipt.confirmations <= 10) {
           await delay(500);
           continue;
         }
