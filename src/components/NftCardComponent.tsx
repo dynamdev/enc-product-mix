@@ -6,8 +6,12 @@ import enchantmintProductMixNftAbi from '@/abi/enchantmintProductMixNft.json';
 import { ButtonMintNftComponent } from '@/components/ButtonMintNftComponent';
 import { INft } from '@/interfaces/INft';
 
-export const NftCardComponent = (props: INft) => {
-  const { jsonCid, thumbnailCid, videoCid, title, description } = props;
+interface NftCardComponentProps {
+  nft: INft;
+}
+
+export const NftCardComponent = (props: NftCardComponentProps) => {
+  const { nft } = props;
 
   return (
     <>
@@ -19,20 +23,22 @@ export const NftCardComponent = (props: INft) => {
         >
           <img
             className="h-full"
-            src={process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + thumbnailCid}
-            alt={thumbnailCid}
+            src={
+              process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + nft.thumbnailCid
+            }
+            alt={nft.thumbnailCid}
           />
         </figure>
         <div className="card-body p-4">
-          <h2 className="card-title">{title}</h2>
+          <h2 className="card-title">{nft.title}</h2>
 
-          <p>{description}</p>
+          <p>{nft.description}</p>
           <sub className={'mx-auto pb-2 flex gap-2'}>
             <span>IPFS: </span>
             <span>
               [
               <a
-                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + jsonCid}
+                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + nft.jsonCid}
                 target={'_blank'}
                 className={'link'}
               >
@@ -43,7 +49,9 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + thumbnailCid}
+                href={
+                  process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + nft.thumbnailCid
+                }
                 target={'_blank'}
                 className={'link'}
               >
@@ -54,7 +62,7 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + videoCid}
+                href={process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + nft.videoCid}
                 target={'_blank'}
                 className={'link'}
               >
@@ -68,7 +76,9 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + jsonCid}
+                href={
+                  process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + nft.jsonCid
+                }
                 target={'_blank'}
                 className={'link'}
               >
@@ -80,7 +90,8 @@ export const NftCardComponent = (props: INft) => {
               [
               <a
                 href={
-                  process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + thumbnailCid
+                  process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL +
+                  nft.thumbnailCid
                 }
                 target={'_blank'}
                 className={'link'}
@@ -92,7 +103,9 @@ export const NftCardComponent = (props: INft) => {
             <span>
               [
               <a
-                href={process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + videoCid}
+                href={
+                  process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + nft.videoCid
+                }
                 target={'_blank'}
                 className={'link'}
               >
@@ -102,7 +115,7 @@ export const NftCardComponent = (props: INft) => {
             </span>
           </sub>
           <div className="card-actions">
-            <ButtonMintNftComponent jsonCid={jsonCid} videoCid={videoCid} />
+            <ButtonMintNftComponent nft={nft} />
           </div>
         </div>
       </div>

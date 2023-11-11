@@ -18,6 +18,7 @@ export const NftContext = createContext<{
   mintedNfts: INft[];
   unmintedNfts: INft[];
   addUnmintedNft: (metadataUri: string) => void;
+  mintUnmintedNft: (tokenId: number, unmintedNft: INft) => Promise<void>;
   isLoading: boolean;
 } | null>(null);
 
@@ -65,40 +66,55 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     return contractMetadataUris;
   }, [getContact]);
 
-  const loadMetadata = async (
-    tokenId: number,
-    tokenUri: string,
-  ): Promise<INft | null> => {
-    let gatewayTokenUri = tokenUri.replace(
-      process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL!,
-      '',
-    );
-    if (gatewayTokenUri !== tokenUri) {
-      gatewayTokenUri =
-        process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + gatewayTokenUri;
-    }
+  const loadMetadata = useCallback(
+    async (tokenId: number, tokenUri: string): Promise<INft | null> => {
+      let gatewayTokenUri = tokenUri.replace(
+        process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL!,
+        '',
+      );
+      if (gatewayTokenUri !== tokenUri) {
+        gatewayTokenUri =
+          process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + gatewayTokenUri;
+      }
 
-    try {
-      const response = await axios.get(gatewayTokenUri);
-      const data: {
-        name: string;
-        description: string;
-        animation_url: string;
-        image: string;
-      } = response.data;
+      try {
+        const response = await axios.get(gatewayTokenUri);
+        const data: {
+          name: string;
+          description: string;
+          animation_url: string;
+          image: string;
+        } = response.data;
 
-      return {
-        tokenId,
-        description: data.description,
-        title: data.name,
-        videoCid: data.animation_url.split('/').pop()!,
-        thumbnailCid: data.image.split('/').pop()!,
-        jsonCid: tokenUri.split('/').pop()!,
-      };
-    } catch (_) {
-      return null;
-    }
-  };
+        const contract = await getContact();
+        if (contract === null) return null;
+
+        let mintDate: string | null;
+
+        try {
+          mintDate = await contract.getMintDateByVideoCid(
+            getIpfsCidFromUrl(data.animation_url),
+          );
+        } catch (_) {
+          mintDate = null;
+        }
+
+        return {
+          tokenId,
+          mintDate:
+            mintDate === null ? null : new Date(parseInt(mintDate) * 1000),
+          description: data.description,
+          title: data.name,
+          videoCid: data.animation_url.split('/').pop()!,
+          thumbnailCid: data.image.split('/').pop()!,
+          jsonCid: tokenUri.split('/').pop()!,
+        };
+      } catch (_) {
+        return null;
+      }
+    },
+    [getContact],
+  );
 
   const initializeNfts = useCallback(async () => {
     setIsLoading(true);
@@ -148,7 +164,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     setUnmintedNfts(unmintedNfts);
     setMintedNfts(mintedNfts);
     setIsLoading(false);
-  }, [getContractMetadataUriObjects]);
+  }, [getContractMetadataUriObjects, loadMetadata]);
 
   const addUnmintedNft = async (metadataUri: string) => {
     //update local storage for new metadata
@@ -165,6 +181,31 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     });
   };
 
+  const mintUnmintedNft = async (tokenId: number, unmintedNft: INft) => {
+    const newNft = await loadMetadata(
+      tokenId,
+      process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + unmintedNft.jsonCid,
+    );
+
+    if (newNft === null) return;
+
+    const newUnmintedNfts = unmintedNfts.filter(
+      (nft) => nft.jsonCid !== unmintedNft.jsonCid,
+    );
+
+    localStorage.setItem(
+      'localMetadataUris',
+      JSON.stringify(
+        newUnmintedNfts.map(
+          (nft) => process.env.NEXT_PUBLIC_IPFS_MAIN_BASE_URL + nft.jsonCid,
+        ),
+      ),
+    );
+
+    setUnmintedNfts(newUnmintedNfts);
+    setMintedNfts((nfts) => [...nfts, newNft]);
+  };
+
   useEffect(() => {
     if (account !== null && !isInitialyLoaded) {
       initializeNfts().then();
@@ -178,6 +219,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
         mintedNfts,
         unmintedNfts,
         addUnmintedNft,
+        mintUnmintedNft,
         isLoading,
       }}
     >

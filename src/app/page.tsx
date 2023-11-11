@@ -43,17 +43,7 @@ export default function Home() {
               <div className={'text-xl font-bold'}>Unminted Nfts</div>
               <div className={'flex flex-wrap gap-2 justify-center'}>
                 {unmintedNfts.map((nft, index) => {
-                  return (
-                    <NftCardComponent
-                      key={'nft_' + index}
-                      tokenId={nft.tokenId}
-                      videoCid={nft.videoCid}
-                      jsonCid={nft.jsonCid}
-                      title={nft.title}
-                      description={nft.description}
-                      thumbnailCid={nft.thumbnailCid}
-                    />
-                  );
+                  return <NftCardComponent key={'nft_' + index} nft={nft} />;
                 })}
               </div>
             </div>
@@ -66,17 +56,7 @@ export default function Home() {
               <div className={'text-xl font-bold'}>Minted Nfts</div>
               <div className={'flex flex-wrap gap-2 justify-center'}>
                 {mintedNfts.map((nft, index) => {
-                  return (
-                    <NftCardComponent
-                      key={'nft_' + index}
-                      tokenId={nft.tokenId}
-                      videoCid={nft.videoCid}
-                      jsonCid={nft.jsonCid}
-                      title={nft.title}
-                      description={nft.description}
-                      thumbnailCid={nft.thumbnailCid}
-                    />
-                  );
+                  return <NftCardComponent key={'nft_' + index} nft={nft} />;
                 })}
               </div>
             </div>

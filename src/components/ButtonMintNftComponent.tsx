@@ -4,78 +4,22 @@ import { useSmartContract } from '@/hooks/useSmartContract';
 import { getSmartContractCleanErrorMessage } from '@/helper/smartContractHelper';
 import { showErrorToast } from '@/helper/toastHelper';
 import { delay } from '@/helper/commonHelper';
+import { INft } from '@/interfaces/INft';
+import { useNft } from '@/hooks/useNft';
 
 interface ButtonMintNftComponentProps {
-  jsonCid: string;
-  videoCid: string;
+  nft: INft;
 }
 
 export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
-  const { jsonCid, videoCid } = props;
+  const { nft } = props;
 
-  const { account, signer } = useMetamask();
+  const { signer, account } = useMetamask();
   const { getContact, getContractOwner } = useSmartContract();
+  const { mintUnmintedNft } = useNft();
 
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [mintDate, setMintDate] = useState<Date | null>(null);
-
-  const initialize = useCallback(async () => {
-    if (account === null || signer === null) {
-      setIsLoading(true);
-      setLoadingMessage('Please connect your Metamask');
-      return;
-    }
-
-    const contract = await getContact();
-    const contractOwner =
-      contract !== null ? await getContractOwner(contract) : null;
-
-    if (contractOwner === null) {
-      setIsLoading(true);
-      setLoadingMessage('Checking the owner of the contract!');
-      return;
-    }
-
-    if (account !== contractOwner) {
-      setIsLoading(true);
-      setLoadingMessage('You are not the contract owner!');
-      return;
-    }
-
-    if (contract === null) {
-      setIsLoading(true);
-      setLoadingMessage("Can't load the smart contract!");
-      return;
-    }
-
-    setIsLoading(true);
-    setLoadingMessage('Checking if NFT is already minted');
-
-    setMintDate(null);
-
-    contract
-      .getMintDateByVideoCid(videoCid)
-      .then((result) => {
-        setMintDate(new Date(parseInt(result) * 1000));
-      })
-      .catch(() => {})
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [account, getContact, getContractOwner, signer, videoCid]);
-
-  useEffect(() => {
-    setIsLoaded(false);
-  }, [jsonCid]);
-
-  useEffect(() => {
-    if (!isLoaded) {
-      initialize().then();
-      setIsLoaded(true);
-    }
-  }, [initialize, isLoaded]);
 
   const getNftTokenId = useCallback(
     async (txHash: string): Promise<number | null> => {
@@ -120,8 +64,8 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
 
     await contract
       .safeMint(
-        videoCid,
-        process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + jsonCid,
+        nft.videoCid,
+        process.env.NEXT_PUBLIC_IPFS_MAIN_METADATA_URL + nft.jsonCid,
       )
       .then((contractResponse) => {
         setIsLoading(true);
@@ -148,7 +92,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
               tokenId,
           );
 
-          setMintDate(new Date());
+          mintUnmintedNft(tokenId, nft).then();
           setIsLoading(false);
         });
       })
@@ -156,7 +100,14 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
         showErrorToast(getSmartContractCleanErrorMessage(error));
         setIsLoading(false);
       });
-  }, [account, getContact, getContractOwner, getNftTokenId, jsonCid, videoCid]);
+  }, [
+    account,
+    getContact,
+    getContractOwner,
+    getNftTokenId,
+    mintUnmintedNft,
+    nft,
+  ]);
 
   return (
     <>
@@ -170,7 +121,7 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
           </button>
         </>
       )}
-      {!isLoading && mintDate === null && (
+      {!isLoading && nft.mintDate === null && (
         <button
           className={'btn btn-primary text-primary-content mx-auto w-full'}
           onClick={() => {
@@ -180,13 +131,14 @@ export const ButtonMintNftComponent = (props: ButtonMintNftComponentProps) => {
           Mint
         </button>
       )}
-      {!isLoading && mintDate !== null && (
+      {!isLoading && nft.mintDate !== null && (
         <div
           className={
             'h-12 font-bold bg-secondary rounded-lg text-secondary-content mx-auto w-full text-center flex flex-col justify-center'
           }
         >
-          Minted: {mintDate.toDateString()} {mintDate.toLocaleTimeString()}
+          Minted: {nft.mintDate.toDateString()}{' '}
+          {nft.mintDate.toLocaleTimeString()}
         </div>
       )}
     </>
