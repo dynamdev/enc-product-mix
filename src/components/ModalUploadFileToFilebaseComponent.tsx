@@ -6,8 +6,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Store } from 'react-notifications-component';
-import axios from 'axios';
 import { useNft } from '@/hooks/useNft';
 import { convertVideoToGif } from '@/helper/videoHelper';
 import { useMetamask } from '@/hooks/useMetamask';
@@ -44,6 +42,8 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
+  const [processStepCount, setProcessStepCount] = useState(0);
+
   const [isButtonUploadIpfsLoading, setIsButtonUploadIpfsLoading] =
     useState(false);
   const [buttonUploadIpfsText, setButtonUploadIpfsText] =
@@ -65,6 +65,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     filename: string,
     fileData: string | File,
   ): Promise<null | IIpfs> => {
+    setProcessStepCount((count) => ++count);
     setButtonUploadIpfsText('Uploading ' + fileTypeInfo + ' to Crust Cloud...');
 
     const ipfsResponse = await uploadToCrustCloudGateway(
@@ -80,6 +81,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       return null;
     }
 
+    setProcessStepCount((count) => ++count);
     setButtonUploadIpfsText('Pinning ' + fileTypeInfo + ' to Crust Cloud...');
 
     const pinningResponse = await pinToCrustCloud(
@@ -112,30 +114,29 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
       return;
     }
 
+    setIsButtonUploadIpfsLoading(true);
+    setProcessStepCount((count) => ++count);
+    setButtonUploadIpfsText('Generating Web3 Auth Token...');
+
     const signer = await switchNetwork(1);
 
     if (signer === null) {
-      showErrorToast('Please connect your metamask account.');
+      showErrorToast('Failed to generate W3 Auth Token!');
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
       return;
     }
 
     const w3AuthToken = await generateW3AuthToken(account, signer);
 
     if (w3AuthToken === null) {
-      Store.addNotification({
-        type: 'danger',
-        message: 'Failed to generate W3 Auth Token!',
-        container: 'top-right',
-        dismiss: {
-          duration: 3000,
-          onScreen: true,
-          showIcon: true,
-        },
-      });
+      showErrorToast('Failed to generate W3 Auth Token!');
+      setButtonUploadIpfsText('Upload to IPFS');
+      setIsButtonUploadIpfsLoading(false);
       return;
     }
 
-    setIsButtonUploadIpfsLoading(true);
+    setProcessStepCount((count) => ++count);
     setButtonUploadIpfsText('Generating Gif from Video...');
 
     const gif = await convertVideoToGif(selectedVideo!);
@@ -188,6 +189,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     setName('');
     setDescription('');
     setIsModalOpen(false);
+    setProcessStepCount(0);
   };
 
   const toggleModal = useCallback(async () => {
@@ -347,6 +349,18 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
             )}
             {buttonUploadIpfsText}
           </button>
+          {isButtonUploadIpfsLoading && (
+            <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700 mt-1">
+              <div
+                className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
+                style={{
+                  width: Math.round((processStepCount / 8) * 100) + '%',
+                }}
+              >
+                {Math.round((processStepCount / 8) * 100) + '%'}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
