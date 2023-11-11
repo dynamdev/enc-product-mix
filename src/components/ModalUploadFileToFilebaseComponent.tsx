@@ -340,6 +340,11 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
             }}
             disabled={isButtonUploadIpfsLoading}
           >
+            {isButtonUploadIpfsLoading && (
+              <>
+                <span className="loading loading-spinner"></span>
+              </>
+            )}
             {buttonUploadIpfsText}
           </button>
         </div>
