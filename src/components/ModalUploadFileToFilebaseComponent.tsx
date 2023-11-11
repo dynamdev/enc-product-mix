@@ -31,7 +31,7 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
   UploadFileToFilebaseModalComponentElement,
   {}
 >(({}, ref) => {
-  const { addNft } = useNft();
+  const { addUnmintedNft } = useNft();
   const { account, switchNetwork } = useMetamask();
   const { getContractOwner, getContact } = useSmartContract();
 
@@ -177,7 +177,9 @@ export const ModalUploadFileToFilebaseComponent = forwardRef<
     );
     if (jsonResponse === null) return;
 
-    addNft(process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + jsonResponse.Hash);
+    addUnmintedNft(
+      process.env.NEXT_PUBLIC_IPFS_GATEWAY_BASE_URL + jsonResponse.Hash,
+    );
 
     setButtonUploadIpfsText('Upload to IPFS');
     setIsButtonUploadIpfsLoading(false);

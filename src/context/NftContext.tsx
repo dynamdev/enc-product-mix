@@ -15,8 +15,9 @@ import { getIpfsCidFromUrl } from '@/helper/ipfsHelper';
 import { useMetamask } from '@/hooks/useMetamask';
 
 export const NftContext = createContext<{
-  nfts: INft[];
-  addNft: (metadataUri: string) => void;
+  mintedNfts: INft[];
+  unmintedNfts: INft[];
+  addUnmintedNft: (metadataUri: string) => void;
   isLoading: boolean;
 } | null>(null);
 
@@ -27,7 +28,8 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   const { account } = useMetamask();
 
   const [isInitialyLoaded, setIsinitialyLoaded] = useState(false);
-  const [nfts, setNfts] = useState<INft[]>([]);
+  const [mintedNfts, setMintedNfts] = useState<INft[]>([]);
+  const [unmintedNfts, setUnmintedNfts] = useState<INft[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const getLocalMetadataUris = (): string[] => {
@@ -37,7 +39,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       : JSON.parse(localMetadataUrisJson);
   };
 
-  const getContractMetadataUris = useCallback(async (): Promise<
+  const getContractMetadataUriObjects = useCallback(async (): Promise<
     { tokenId: number; uri: string }[]
   > => {
     const contract = await getContact();
@@ -103,12 +105,12 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
 
     //load local and contract metadata uri
     let localMetadataUris = getLocalMetadataUris();
-    const contractMetadataUris = await getContractMetadataUris();
+    const contractMetadataUriObjects = await getContractMetadataUriObjects();
 
     //remove existing local metadata if found in contract uri
     localMetadataUris = localMetadataUris.filter(
       (uri) =>
-        !contractMetadataUris
+        !contractMetadataUriObjects
           .map((metadataUri) => getIpfsCidFromUrl(metadataUri.uri))
           .includes(getIpfsCidFromUrl(uri)),
     );
@@ -119,29 +121,36 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
       JSON.stringify(localMetadataUris),
     );
 
-    //merge local and contract metadata uri
-    const metadataUris = [
-      ...localMetadataUris.map((uri) => {
-        return { tokenId: -1, uri };
-      }),
-      ...contractMetadataUris,
-    ];
+    //transform localMetadataUri to {token:number, uri:string}
+    const localMetadataUriObjects = localMetadataUris.map((uri) => {
+      return { tokenId: -1, uri };
+    });
 
-    //load metadata and set nfts state
-    const nfts: INft[] = [];
-    for (const metadataUri of metadataUris) {
+    const mintedNfts: INft[] = [];
+    const unmintedNfts: INft[] = [];
+
+    for (const metadataUriObject of localMetadataUriObjects) {
       const newNftData = await loadMetadata(
-        metadataUri.tokenId,
-        metadataUri.uri,
+        metadataUriObject.tokenId,
+        metadataUriObject.uri,
       );
-      if (newNftData !== null) nfts.push(newNftData);
+      if (newNftData !== null) unmintedNfts.push(newNftData);
     }
 
-    setNfts(nfts);
-    setIsLoading(false);
-  }, [getContractMetadataUris]);
+    for (const metadataUriObject of contractMetadataUriObjects) {
+      const newNftData = await loadMetadata(
+        metadataUriObject.tokenId,
+        metadataUriObject.uri,
+      );
+      if (newNftData !== null) mintedNfts.push(newNftData);
+    }
 
-  const addNft = async (metadataUri: string) => {
+    setUnmintedNfts(unmintedNfts);
+    setMintedNfts(mintedNfts);
+    setIsLoading(false);
+  }, [getContractMetadataUriObjects]);
+
+  const addUnmintedNft = async (metadataUri: string) => {
     //update local storage for new metadata
     const localMetadataUris = getLocalMetadataUris();
     localMetadataUris.push(metadataUri);
@@ -152,7 +161,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
 
     loadMetadata(-1, metadataUri).then((newNft) => {
       if (newNft === null) return;
-      setNfts((nfts) => [newNft, ...nfts]);
+      setUnmintedNfts((nfts) => [...nfts, newNft]);
     });
   };
 
@@ -166,8 +175,9 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
   return (
     <NftContext.Provider
       value={{
-        nfts,
-        addNft,
+        mintedNfts,
+        unmintedNfts,
+        addUnmintedNft,
         isLoading,
       }}
     >
