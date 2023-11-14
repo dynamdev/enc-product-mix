@@ -1,0 +1,2 @@
+[build]
+command = "rm -rf hardhat && npm run build"
