@@ -9,12 +9,15 @@ describe('EnchantmintProductMixNft', function () {
 
   beforeEach(async function () {
     // Deploying contract
+    [owner, addr1] = await ethers.getSigners();
+
     EnchantmintProductMixNft = await ethers.getContractFactory(
       'EnchantmintProductMixNft',
     );
-    enchantmintProductMixNft = await EnchantmintProductMixNft.deploy();
+    enchantmintProductMixNft = await EnchantmintProductMixNft.deploy(
+      owner.address,
+    );
     await enchantmintProductMixNft.getAddress();
-    [owner, addr1] = await ethers.getSigners();
   });
 
   describe('Minting', function () {
