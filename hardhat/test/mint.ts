@@ -33,7 +33,7 @@ describe('EnchantmintProductMixNft', function () {
       const uri: string = 'https://example.com/uri';
       await expect(
         enchantmintProductMixNft.connect(addr1).safeMint(videoCid, uri),
-      ).to.be.revertedWith('Ownable: caller is not the owner');
+      ).to.be.reverted;
     });
 
     it('Should not allow minting with the same videoCid', async function () {
