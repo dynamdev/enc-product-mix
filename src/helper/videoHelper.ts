@@ -36,7 +36,7 @@ export const convertVideoToGif = async (video: File): Promise<File> => {
       fps +
       ',scale=' +
       scale +
-      ':-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5',
+      ':-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer',
     'video.gif',
   ]);
 
