@@ -18,6 +18,7 @@ export const NftContext = createContext<{
   mintedNfts: INft[];
   unmintedNfts: INft[];
   addUnmintedNft: (metadataUri: string) => void;
+  removeUnmintedNft: (nft: INft) => void;
   mintUnmintedNft: (tokenId: number, unmintedNft: INft) => Promise<void>;
   isLoading: boolean;
 } | null>(null);
@@ -206,6 +207,27 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
     setMintedNfts((nfts) => [...nfts, newNft]);
   };
 
+  const removeUnmintedNft = (nft: INft) => {
+    const confirmMsg =
+      'Are you sure you want to hide this NFT? This will not remove the NFT in crust cloud';
+
+    if (!confirm(confirmMsg)) return;
+
+    setUnmintedNfts((unmintedNfts) =>
+      unmintedNfts.filter((unmintedNft) => unmintedNft.jsonCid !== nft.jsonCid),
+    );
+
+    let localMetadataUris = getLocalMetadataUris();
+    localMetadataUris = localMetadataUris.filter(
+      (uri) => uri.split('/').pop()! !== nft.jsonCid,
+    );
+
+    localStorage.setItem(
+      'localMetadataUris',
+      JSON.stringify(localMetadataUris),
+    );
+  };
+
   useEffect(() => {
     if (account !== null && !isInitialyLoaded) {
       initializeNfts().then();
@@ -219,6 +241,7 @@ export const NftProvider: FunctionComponent<{ children: ReactNode }> = ({
         mintedNfts,
         unmintedNfts,
         addUnmintedNft,
+        removeUnmintedNft,
         mintUnmintedNft,
         isLoading,
       }}
